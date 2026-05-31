@@ -1,6 +1,6 @@
 {
   "name": "gt-gh",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "GitHub-only stacked changes CLI compatible with Graphite-style gt commands.",
   "license": "AGPL-3.0-only",
   "main": "dist/src/index.js",

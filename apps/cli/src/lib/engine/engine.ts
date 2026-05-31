@@ -93,6 +93,23 @@ export type TEngine = {
   squashCurrentBranch: (opts: { message?: string; noEdit?: boolean }) => void;
 
   addAll: () => void;
+  stageTrackedModifications: () => void;
+  resetWorkingTreeToHead: () => void;
+  restoreWorktreePatch: (patch: string) => boolean;
+  getStagedDiff: () => string;
+  blameLines: (args: {
+    rev: string;
+    file: string;
+    startLine: number;
+    endLine: number;
+  }) => string[];
+  absorbIntoBranch: (
+    branchName: string,
+    fixups: { subject: string; patch: string }[]
+  ) =>
+    | { result: 'DONE' }
+    | { result: 'APPLY_FAILED'; subject: string }
+    | { result: 'REBASE_CONFLICT'; rebasedBranchBase: string };
   detach: () => void;
   unbranch: () => void;
   detachAndResetBranchChanges: () => void;
@@ -749,6 +766,42 @@ export function composeEngine({
       };
     },
     addAll: git.addAll,
+    stageTrackedModifications: git.addUpdate,
+    resetWorkingTreeToHead: () => git.hardReset(),
+    restoreWorktreePatch: git.applyPatchToWorktreeThreeWay,
+    getStagedDiff: git.getStagedDiff,
+    blameLines: git.blameLines,
+    absorbIntoBranch: (
+      branchName: string,
+      fixups: { subject: string; patch: string }[]
+    ) => {
+      const cachedMeta = assertBranchIsValidAndNotTrunkAndGetMeta(branchName);
+      checkoutBranch(branchName);
+
+      const initialRevision = cachedMeta.branchRevision;
+
+      for (const fixup of fixups) {
+        if (!git.applyPatchToIndexThreeWay(fixup.patch)) {
+          // Roll back any fixup commits we created on top of the branch.
+          git.hardReset(initialRevision);
+          return { result: 'APPLY_FAILED', subject: fixup.subject } as const;
+        }
+        git.commitFixup(fixup.subject);
+      }
+
+      if (
+        git.autosquashRebase(cachedMeta.parentBranchRevision) ===
+        'REBASE_CONFLICT'
+      ) {
+        return {
+          result: 'REBASE_CONFLICT',
+          rebasedBranchBase: cachedMeta.parentBranchRevision,
+        } as const;
+      }
+
+      handleSuccessfulRebase(branchName, cachedMeta.parentBranchRevision);
+      return { result: 'DONE' } as const;
+    },
     detach() {
       const branchName = getCurrentBranchOrThrow();
       const cachedMeta = assertBranchIsValidAndNotTrunkAndGetMeta(branchName);

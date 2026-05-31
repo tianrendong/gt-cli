@@ -1,3 +1,12 @@
+import {
+  addUpdate,
+  applyPatchToIndexThreeWay,
+  applyPatchToWorktreeThreeWay,
+  autosquashRebase,
+  blameLines,
+  commitFixup,
+  getStagedDiff,
+} from './absorb';
 import { addAll } from './add_all';
 import {
   deleteBranch,
@@ -62,6 +71,13 @@ function composeGitInternal() {
   return {
     ...composeGetRemoteSha(),
     addAll,
+    addUpdate,
+    getStagedDiff,
+    blameLines,
+    applyPatchToIndexThreeWay,
+    applyPatchToWorktreeThreeWay,
+    commitFixup,
+    autosquashRebase,
     getCommitAuthor,
     getCommitDate,
     getFilesChanged,

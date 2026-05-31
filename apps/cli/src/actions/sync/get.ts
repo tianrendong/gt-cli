@@ -1,17 +1,74 @@
 import chalk from 'chalk';
+import { getDownstackDependencies } from '../../lib/api/get_downstack_dependencies';
 import { TContext } from '../../lib/context';
-import { KilledError, RebaseConflictError } from '../../lib/errors';
+import {
+  ExitFailedError,
+  KilledError,
+  RebaseConflictError,
+} from '../../lib/errors';
+import { uncommittedTrackedChangesPrecondition } from '../../lib/preconditions';
 import { assertUnreachable } from '../../lib/utils/assert_unreachable';
 import { persistContinuation } from '../persist_continuation';
 import { printConflictStatus } from '../print_conflict_status';
+import { syncPrInfo } from '../sync_pr_info';
 
 export async function getAction(
-  _args: { branchName: string | undefined; force: boolean },
+  args: { branchName: string | undefined; force: boolean },
   context: TContext
 ): Promise<void> {
-  context.splog.message(
-    '⚠️ This command is not yet implemented in this GitHub-only Graphite CLI.\n\nPlease check out the issue on GitHub https://github.com/tianrendong/gt-gh/issues/6'
+  uncommittedTrackedChangesPrecondition();
+
+  // This GitHub-only CLI does not implement the interactive branch selector,
+  // so an explicit branch is required (pi-graphite always passes one).
+  const branchName =
+    args.branchName ??
+    (context.interactive
+      ? context.engine.currentBranchPrecondition
+      : undefined);
+  if (!branchName) {
+    throw new ExitFailedError(
+      'You must specify a branch to get when running with `--no-interactive`.'
+    );
+  }
+
+  context.splog.info(
+    `Pulling ${chalk.cyan(context.engine.trunk)} from remote...`
   );
+  context.splog.info(
+    context.engine.pullTrunk() === 'PULL_UNNEEDED'
+      ? `${chalk.green(context.engine.trunk)} is up to date.`
+      : `${chalk.green(context.engine.trunk)} fast-forwarded to ${chalk.gray(
+          context.engine.getRevision(context.engine.trunk)
+        )}.`
+  );
+  context.splog.newline();
+
+  const downstackToSync = await getDownstackDependencies(
+    {
+      branchName,
+      trunkName: context.engine.trunk,
+    },
+    undefined,
+    context
+  );
+
+  if (downstackToSync.length === 0) {
+    context.splog.info(`Nothing to get for ${chalk.cyan(branchName)}.`);
+    return;
+  }
+
+  await getBranchesFromRemote(
+    {
+      downstack: downstackToSync,
+      base: context.engine.trunk,
+      force: args.force,
+    },
+    context
+  );
+
+  context.engine.checkoutBranch(branchName);
+
+  await syncPrInfo(context.engine.allBranchNames, context);
 }
 
 export async function getBranchesFromRemote(
