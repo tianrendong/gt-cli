@@ -38,8 +38,8 @@ describe('userConfigFactory', () => {
         ],
       },
       results: {
-        apiServer: 'https://api.prod.graphite.dev/v1',
-        appServer: 'https://app.prod.graphite.dev',
+        apiServer: 'https://api.github.com',
+        appServer: 'https://github.com',
       },
     },
     {
@@ -47,8 +47,8 @@ describe('userConfigFactory', () => {
       envVars: {},
       profile: {},
       results: {
-        apiServer: 'https://api.graphite.dev/v1',
-        appServer: 'https://app.graphite.dev',
+        apiServer: 'https://api.github.com',
+        appServer: 'https://github.com',
       },
     },
     {
@@ -63,8 +63,8 @@ describe('userConfigFactory', () => {
         ],
       },
       results: {
-        apiServer: 'https://api.stg.graphite.dev/v1',
-        appServer: 'https://app.stg.graphite.dev',
+        apiServer: 'https://api.github.com',
+        appServer: 'https://github.com',
       },
     },
   ];

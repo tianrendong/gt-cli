@@ -33,9 +33,7 @@ export async function renameCurrentBranch(
   const oldBranchName = context.engine.currentBranchPrecondition;
 
   const branchName =
-    context.interactive && args.newBranchName
-      ? args.newBranchName
-      : await getNewBranchName(context, oldBranchName);
+    args.newBranchName ?? (await getNewBranchName(context, oldBranchName));
 
   if (oldBranchName === branchName) {
     context.splog.info(

@@ -1,78 +1,52 @@
 import yargs from 'yargs';
+import { spawnSync } from 'child_process';
 import { graphiteWithoutRepo } from '../lib/runner';
-import { execFileSync } from 'child_process';
+import { ExitFailedError } from '../lib/errors';
+import { runGh } from '../lib/github/client';
 
-const args = {
+export const command = 'auth';
+export const canonical = 'auth';
+export const description =
+  'Authenticate using GitHub CLI credentials; no Graphite account or token is used.';
+export const builder = {
   token: {
     type: 'string',
     alias: 't',
-    describe: 'Authenticate with the GitHub API using OAuth.',
-    demandOption: false,
+    describe:
+      'GitHub token (prefer GH_TOKEN in automation). Passed to gh on stdin, never persisted by gt.',
   },
+  hostname: { type: 'string', default: process.env.GH_HOST || 'github.com' },
 } as const;
-type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
-
-export const command = 'auth';
-export const description =
-  'Authenticate with the GitHub CLI to create and manage PRs in GitHub from Graphite.';
-export const builder = args;
-export const canonical = 'auth';
-
-const MIN_GH_VERSION = '2.0.0';
-
-export const handler = async (argv: argsT): Promise<void> => {
-  return graphiteWithoutRepo(argv, canonical, async (context) => {
-    const ghVersion = getGhVersion();
-
-    if (!ghVersion || ghVersion < MIN_GH_VERSION) {
-      context.splog.message(
-        `❌ Please install GitHub CLI version ${MIN_GH_VERSION} or higher.`
+export const handler = async (
+  argv: yargs.Arguments<yargs.InferredOptionTypes<typeof builder>>
+): Promise<void> =>
+  graphiteWithoutRepo(argv, canonical, async (context) => {
+    if (argv.token) {
+      runGh(
+        ['auth', 'login', '--hostname', argv.hostname, '--with-token'],
+        argv.token + '\n'
       );
-      return;
-    }
-
-    const isGhAuthorized = getGithubAuthorizationStatus();
-
-    if (isGhAuthorized) {
-      context.splog.message('✅ Already authenticated with GitHub.');
-      return;
-    }
-
-    context.splog.message(
-      '❌ Graphite is not authenticated with GitHub. Please authenticate.'
-    );
-
-    try {
-      execFileSync('gh', ['auth', 'login'], {
-        stdio: 'inherit',
-      });
-
-      context.splog.message(
-        '✅ Successfully authenticated Graphite with GitHub.'
+    } else if (!getGithubAuthorizationStatus(argv.hostname)) {
+      if (!context.interactive)
+        throw new ExitFailedError(
+          `Authenticate with gh auth login --hostname ${argv.hostname}, or set GH_TOKEN/GH_ENTERPRISE_TOKEN.`
+        );
+      const result = spawnSync(
+        'gh',
+        ['auth', 'login', '--hostname', argv.hostname],
+        { stdio: 'inherit' }
       );
-    } catch {
-      context.splog.message(
-        '❌ Failed to authenticate Graphite with GitHub. Please try again.'
-      );
+      if (result.status !== 0)
+        throw new ExitFailedError('GitHub authentication failed.');
     }
+    context.splog.info(`Authenticated with GitHub (${argv.hostname}).`);
   });
-};
 
-const getGhVersion = (): string | null => {
-  try {
-    const output = execFileSync('gh', ['--version']).toString();
-    const match = output.match(/gh version (\d+\.\d+\.\d+)/);
-    return match ? match[1] : null;
-  } catch (error) {
-    return null;
-  }
-};
-
-export const getGithubAuthorizationStatus = (): boolean => {
-  try {
-    execFileSync('gh', ['auth', 'status'], { stdio: 'ignore' });
-    return true;
-  } catch {
-    return false;
-  }
-};
+export function getGithubAuthorizationStatus(hostname?: string): boolean {
+  const result = spawnSync(
+    'gh',
+    ['auth', 'status', ...(hostname ? ['--hostname', hostname] : [])],
+    { stdio: 'ignore', timeout: 30_000 }
+  );
+  return !result.error && result.status === 0;
+}

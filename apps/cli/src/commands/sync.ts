@@ -3,9 +3,14 @@ import { syncAction } from '../actions/sync/sync';
 import { graphite } from '../lib/runner';
 
 const args = {
-  all: {
+  'stack-sync': {
     describe:
-      'Sync branches across all configured trunks. This CLI supports one trunk; accepted as no-op.',
+      'Reconcile native GitHub Stack topology before syncing Git branches.',
+    type: 'boolean',
+    default: true,
+  },
+  all: {
+    describe: 'Sync every configured trunk and its stacks.',
     type: 'boolean',
     default: false,
     alias: 'a',
@@ -39,15 +44,26 @@ export const description =
 export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> =>
-  graphite(argv, canonical, async (context) =>
-    syncAction(
-      {
-        pull: true,
-        force: argv.force || argv['delete-all'],
-        delete: true,
-        showDeleteProgress: false,
-        restack: argv.restack,
-      },
-      context
-    )
-  );
+  graphite(argv, canonical, async (context) => {
+    const original = context.engine.currentBranch;
+    const trunks = argv.all ? context.engine.trunks : [context.engine.trunk];
+    for (const trunk of trunks) {
+      if (argv.all) context.engine.checkoutBranch(trunk);
+      await syncAction(
+        {
+          pull: true,
+          force: argv.force,
+          deleteForce:
+            argv['delete-all'] ||
+            context.userConfig.data.cleanupDeleteMerged === true,
+          stackSync: argv['stack-sync'],
+          delete: true,
+          showDeleteProgress: false,
+          restack: argv.restack,
+        },
+        context
+      );
+    }
+    if (argv.all && original && context.engine.branchExists(original))
+      context.engine.checkoutBranch(original);
+  });

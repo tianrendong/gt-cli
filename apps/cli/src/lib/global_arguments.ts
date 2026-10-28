@@ -2,7 +2,7 @@ import yargs from 'yargs';
 
 export const globalArgumentsOptions = {
   interactive: {
-    default: true,
+    default: Boolean(process.stdin.isTTY && process.stdout.isTTY),
     type: 'boolean',
     demandOption: false,
     description: 'Prompt the user. Disable with --no-interactive.',

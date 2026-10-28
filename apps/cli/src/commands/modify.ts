@@ -4,6 +4,9 @@ import { commitCreateAction } from '../actions/commit_create';
 import { editBranchAction } from '../actions/edit_branch';
 import { ExitFailedError } from '../lib/errors';
 import { graphite } from '../lib/runner';
+import { applyBranchPatches } from '../actions/modify_into';
+import { journalGit } from '../lib/operations/journal';
+import { stageChanges } from '../actions/stage_changes';
 
 const args = {
   all: {
@@ -21,9 +24,9 @@ const args = {
     alias: 'c',
   },
   edit: {
-    describe: `Open an editor to edit the commit message when amending.`,
+    describe: `If passed, open an editor to edit the commit message when amending.`,
     demandOption: false,
-    default: true,
+    default: false,
     type: 'boolean',
     alias: 'e',
   },
@@ -34,7 +37,7 @@ const args = {
     type: 'boolean',
   },
   into: {
-    describe: `The branch to modify instead of the current branch. Not currently supported by this CLI.`,
+    describe: `Apply staged changes to this downstack branch, then restack descendants.`,
     demandOption: false,
     type: 'string',
   },
@@ -52,20 +55,20 @@ const args = {
     alias: 'p',
   },
   'reset-author': {
-    describe: `Set the author of the commit to the current user if amending. Not currently supported by this CLI.`,
+    describe: `Set the author of the amended commit to the current user.`,
     demandOption: false,
     default: false,
     type: 'boolean',
   },
   update: {
-    describe: `Stage updates to tracked files before committing. Currently treated like --all by this CLI.`,
+    describe: `Stage updates to tracked files only.`,
     demandOption: false,
     default: false,
     type: 'boolean',
     alias: 'u',
   },
   verbose: {
-    describe: `Show commit diff in editor. Not currently supported by this CLI.`,
+    describe: `Show commit diff in the commit-message editor.`,
     demandOption: false,
     count: true,
     alias: 'v',
@@ -82,30 +85,51 @@ export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) => {
+    if (argv.commit && argv['reset-author'])
+      throw new ExitFailedError('--reset-author requires an amend.');
     if (argv.into) {
-      throw new ExitFailedError(
-        'This GitHub-only CLI does not support gt modify --into.'
+      await stageChanges(
+        {
+          all: argv.all,
+          update: argv.update,
+          patch: argv.patch,
+          offer: 'ALL',
+        },
+        context
       );
-    }
-    if (argv['reset-author']) {
-      throw new ExitFailedError(
-        'This GitHub-only CLI does not support gt modify --reset-author.'
-      );
-    }
-    if (argv.verbose) {
-      throw new ExitFailedError(
-        'This GitHub-only CLI does not support gt modify --verbose.'
+      return applyBranchPatches(
+        [
+          {
+            branch: argv.into,
+            patch: journalGit(
+              ['diff', '--cached', '--binary', '--no-ext-diff'],
+              { noTrim: true }
+            ),
+            message: argv.message,
+            append: argv.commit,
+            resetAuthor: argv['reset-author'],
+          },
+        ],
+        context
       );
     }
     if (argv['interactive-rebase']) {
       return editBranchAction(context);
     }
 
-    if (argv.commit) {
+    // Like Graphite: if this branch has no commits, always create a new one.
+    const hasCommits =
+      context.engine.getAllCommits(
+        context.engine.currentBranchPrecondition,
+        'SHA'
+      ).length > 0;
+    if (argv.commit || !hasCommits) {
       return commitCreateAction(
         {
           message: argv.message,
-          addAll: argv.all || argv.update,
+          addAll: argv.all,
+          update: argv.update,
+          verbose: argv.verbose,
           patch: argv.patch,
         },
         context
@@ -115,8 +139,11 @@ export const handler = async (argv: argsT): Promise<void> =>
     return commitAmendAction(
       {
         message: argv.message,
-        noEdit: !argv.edit || !!argv.message,
-        addAll: argv.all || argv.update,
+        noEdit: !argv.edit || !!argv.message || !context.interactive,
+        addAll: argv.all,
+        update: argv.update,
+        resetAuthor: argv['reset-author'],
+        verbose: argv.verbose,
         patch: argv.patch,
       },
       context

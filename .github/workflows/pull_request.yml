@@ -1,4 +1,6 @@
 name: Pull request CI
+permissions:
+  contents: read
 
 on:
   pull_request:
@@ -24,15 +26,15 @@ jobs:
       - name: Install
         run: corepack yarn install --immutable
       - name: Lint
-        run: corepack yarn workspace gt-gh run lint
+        run: corepack yarn workspace @tianrendong/gt-cli run lint
       - name: Build
         run: corepack yarn turbo run build
       - name: Setup git
-        run: git config --global user.email "test@gmail.com" && git config --global user.name "test"
+        run: git config --global user.email "test@example.invalid" && git config --global user.name "test"
       - name: Git Version
         run: git --version
       - name: Test
-        run: corepack yarn workspace gt-gh run test-ci
+        run: corepack yarn workspace @tianrendong/gt-cli run test-ci
 
   superlinter:
     name: "Run superlinter"

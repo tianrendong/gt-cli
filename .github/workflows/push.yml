@@ -1,118 +1,42 @@
 name: Push CI
 permissions:
-  contents: write
+  contents: read
 on:
   push:
     branches: [main]
-    tags:
-      - "v*"
 
+# Distribution is the public @tianrendong/gt-cli npm package, not standalone binaries.
 jobs:
   lint_and_fast_tests:
     name: "Run CLI tests"
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [22.x, 24.x]
     steps:
       - uses: actions/checkout@v4
         with:
-          clean: "false"
           fetch-depth: 0
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-      - name: Enable Corepack
-        run: corepack enable
-      - name: Install
-        run: corepack yarn install --immutable
-      - name: Build
-        run: corepack yarn turbo run build
-      - name: Setup git
-        run: git config --global user.email "test@gmail.com" && git config --global user.name "test"
-      - name: Git Version
-        run: git --version
-      - name: Test
-        run: corepack yarn workspace gt-gh run test
+      - run: corepack enable
+      - run: corepack yarn install --immutable
+      - run: corepack yarn turbo run build
+      - run: git config --global user.email "test@example.invalid" && git config --global user.name "test"
+      - run: corepack yarn workspace @tianrendong/gt-cli run test
 
   superlinter:
     name: "Run superlinter"
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
-
-      - name: Lint Code Base
-        uses: github/super-linter@v4
+      - uses: github/super-linter@v4
         continue-on-error: true
         env:
           VALIDATE_ALL_CODEBASE: false
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TYPESCRIPT_DEFAULT_STYLE: prettier
-
-  create-binaries:
-    name: Upload executable binaries
-    strategy:
-      matrix:
-        os: [macos, ubuntu]
-        include:
-          - os: macos
-            build: corepack yarn workspace gt-gh run build-pkg -t node18-macos -o "gt-macos-x86-${{ github.sha }}"
-            artifact-name: gt-macos-x86-${{ github.sha }}
-            artifact-path: apps/cli/gt-macos-x86-${{ github.sha }}
-          - os: ubuntu
-            build: corepack yarn workspace gt-gh run build-pkg -t node18-linux -o "gt-linux-${{ github.sha }}"
-            artifact-name: gt-linux-${{ github.sha }}
-            artifact-path: apps/cli/gt-linux-${{ github.sha }}
-    runs-on: ${{ matrix.os }}-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Setup node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Enable Corepack
-        run: corepack enable
-      - name: Install
-        run: corepack yarn install --immutable
-      - name: Build
-        run: corepack yarn turbo run build
-      - name: Build binary
-        run: ${{ matrix.build }}
-      - name: Upload binary
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact-name }}
-          path: ${{ matrix.artifact-path }}
-
-  release:
-    name: Release version
-    if: startsWith(github.ref, 'refs/tags/v')
-    needs: [lint_and_fast_tests, create-binaries]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download mac x86
-        uses: actions/download-artifact@v4
-        with:
-          name: gt-macos-x86-${{ github.sha }}
-      - name: Download linux
-        uses: actions/download-artifact@v4
-        with:
-          name: gt-linux-${{ github.sha }}
-      - name: Rename files
-        run: |
-          mv gt-macos-x86-${{ github.sha }} gt-macos-x86;
-          mv gt-linux-${{ github.sha }} gt-linux
-      - name: Release
-        uses: ncipollo/release-action@v1
-        with:
-          artifacts: "gt-macos-x86,gt-linux"
-          draft: false
-          prerelease: true
-          allowUpdates: true

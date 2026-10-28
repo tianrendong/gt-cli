@@ -1,9 +1,10 @@
 import chalk from 'chalk';
+import path from 'path';
 import stripAnsi from 'strip-ansi';
 import { GRAPHITE_COLORS } from '../lib/colors';
 import { TContext } from '../lib/context';
 import { clearPromptResultLine, suggest } from '../lib/utils/prompts_helpers';
-import { getBranchInfo } from './show_branch';
+import { getBranchInfo, getBranchStatus } from './show_branch';
 
 function getUntrackedBranchNames(context: TContext) {
   return context.engine.allBranchNames.filter(
@@ -20,19 +21,23 @@ export function logAction(
     steps: number | undefined;
     branchName: string;
     showUntracked?: boolean;
+    allTrunks?: boolean;
   },
   context: TContext
 ): void {
-  const logOutput = getStackLines(
-    {
-      short: opts.style === 'SHORT',
-      reverse: opts.reverse,
-      branchName: opts.branchName,
-      indentLevel: 0,
-      steps: opts.steps,
-    },
-    context
-  )
+  const logOutput = (opts.allTrunks ? context.engine.trunks : [opts.branchName])
+    .flatMap((branchName) =>
+      getStackLines(
+        {
+          short: opts.style === 'SHORT',
+          reverse: opts.reverse,
+          branchName,
+          indentLevel: 0,
+          steps: opts.steps,
+        },
+        context
+      )
+    )
     .concat(
       opts.showUntracked
         ? [
@@ -69,20 +74,27 @@ export async function interactiveBranchSelection(
     message: string;
     omitCurrentBranch?: boolean;
     showUntracked?: boolean;
+    branchName?: string;
+    all?: boolean;
   },
   context: TContext
 ): Promise<string> {
-  const choices = getStackLines(
-    {
-      short: true,
-      reverse: false,
-      branchName: context.engine.trunk,
-      indentLevel: 0,
-      omitCurrentBranch: opts.omitCurrentBranch,
-      noStyleBranchName: true,
-    },
-    context
+  const choices = (
+    opts.all ? context.engine.trunks : [opts.branchName ?? context.engine.trunk]
   )
+    .flatMap((branchName) =>
+      getStackLines(
+        {
+          short: true,
+          reverse: false,
+          branchName,
+          indentLevel: 0,
+          omitCurrentBranch: opts.omitCurrentBranch,
+          noStyleBranchName: true,
+        },
+        context
+      )
+    )
     .map((stackLine) => ({
       title: stackLine,
       value: ((stackLine) =>
@@ -136,6 +148,7 @@ type TPrintStackArgs = {
   indentLevel: number;
   omitCurrentBranch?: boolean;
   noStyleBranchName?: boolean; // Currently only implemented for short = true
+  worktrees?: ReadonlyMap<string, string>;
   steps?: number;
 };
 
@@ -146,6 +159,13 @@ function getLogShortColor(toColor: string, index: number): string {
 }
 
 function getStackLines(args: TPrintStackArgs, context: TContext): string[] {
+  // One worktree scan for the graph, never one subprocess per branch.
+  args = {
+    ...args,
+    worktrees: args.noStyleBranchName
+      ? undefined
+      : context.engine.getBranchWorktrees(),
+  };
   const overallIndent = { value: 0 };
   const outputDeep = [
     getUpstackExclusiveLines({ ...args, overallIndent }, context),
@@ -229,7 +249,8 @@ function getUpstackExclusiveLines(
       (child) =>
         !args.omitCurrentBranch ||
         child !== context.engine.currentBranchPrecondition
-    );
+    )
+    .sort();
   const numChildren = children.length;
   return children.flatMap((child, i) =>
     getUpstackInclusiveLines(
@@ -269,6 +290,15 @@ function getBranchLines(
 
   // `gt log short` case
   if (args.short) {
+    const worktree = args.worktrees?.get(args.branchName);
+    const status = args.noStyleBranchName
+      ? ''
+      : [
+          getBranchStatus(args.branchName, context),
+          worktree ? `(${path.basename(worktree)})` : undefined,
+        ]
+          .filter(Boolean)
+          .join(' ');
     return [
       `${'│ '.repeat(args.indentLevel)}${'◯'}${
         args.skipBranchingLine || numChildren <= 2
@@ -280,11 +310,7 @@ function getBranchLines(
           : args.reverse
           ? '─┐'
           : '─┘'
-      }▸${args.branchName}${
-        args.noStyleBranchName || context.engine.isBranchFixed(args.branchName)
-          ? ''
-          : ` ${chalk.reset(`(needs restack)`)}`
-      }`,
+      }▸${args.branchName}${status ? ` ${chalk.reset(status)}` : ''}`,
     ];
   }
 
@@ -333,11 +359,13 @@ function getInfoLines(
   context: TContext
 ): string[] {
   const isCurrent = args.branchName === context.engine.currentBranch;
+  const worktree = args.worktrees?.get(args.branchName);
   return getBranchInfo(
     {
       branchName: args.branchName,
       displayAsCurrent: isCurrent,
       showCommitNames: args.reverse ? 'REVERSE' : 'STANDARD',
+      worktreeName: worktree ? path.basename(worktree) : undefined,
     },
     context
   )

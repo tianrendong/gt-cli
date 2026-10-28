@@ -1,12 +1,17 @@
 import * as t from '../retype';
 import { BadTrunkOperationError, UntrackedBranchError } from '../errors';
-import { prInfoSchema } from './metadata_ref';
+import { prInfoSchema, submittedVersionSchema } from './metadata_ref';
 
 export const cachedMetaSchema = t.intersection(
   t.shape({
     children: t.array(t.string),
     branchRevision: t.string,
+    /** Metadata blob this entry reflects (NO_METADATA when none). Absent in
+     * caches from older releases. Enables compare-and-swap metadata writes
+     * and proves a persisted cache still matches the refs. */
+    metadataOid: t.optional(t.string),
     prInfo: t.optional(prInfoSchema),
+    lastSubmittedVersion: t.optional(submittedVersionSchema),
   }),
   t.taggedUnion('validationResult' as const, {
     VALID: {

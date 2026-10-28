@@ -1,11 +1,20 @@
-// Why does an open source CLI include telemetry?
-// We the creators want to understand how people are using the tool
-// All metrics logged are listed plain to see, and are non blocking in case the server is unavailable.
 import yargs from 'yargs';
 import chalk from 'chalk';
 import { version } from '../../package.json';
-import { init } from '../actions/init';
-import { refreshPRInfoInBackground } from '../background_tasks/fetch_pr_info';
+import {
+  repositoryInitialized,
+  INITIALIZATION_REQUIRED,
+} from './switch/initialization';
+import { StackStore } from './github/stack_file';
+import { exportLocalStacks, importLocalStacks } from './github/local_stacks';
+import {
+  assertNoRollbackInProgress,
+  beginOperation,
+  finishOperation,
+  latestOperation,
+  Operation,
+  recordOperationWorktreeMoves,
+} from './operations/journal';
 import {
   initContext,
   initContextLite,
@@ -27,6 +36,44 @@ import { composeGit } from './git/git';
 import { TGlobalArguments } from './global_arguments';
 import { tracer } from './utils/tracer';
 import { CommandFailedError, CommandKilledError } from './git/runner';
+import { Repository } from './switch/repository';
+import {
+  assertCandidateEnabled,
+  recordCandidateConfig,
+  SwitchState,
+} from './switch/state';
+
+/** Commands that only inspect the repository. They never wait for this
+ * worktree's stack lock (commands in other worktrees never contend at all).
+ * If the lock is free and no operation is pending, they reconcile the gh-stack
+ * mirror, then release it before running so pagers, prompts, and remote reads
+ * cannot stall commands in other terminals. A busy lock or pending recovery
+ * means reading the repository as it is, without changing stack metadata;
+ * the mutating command publishes the mirror when it finishes.
+ */
+export const READ_ONLY_COMMANDS: ReadonlySet<string> = new Set([
+  'log',
+  'log short',
+  'log long',
+  'info',
+  'branch info',
+  'parent',
+  'children',
+  'trunk',
+  'state',
+  'pr',
+  'github status',
+  'internal-only cat',
+  'internal-only changed-files',
+  'internal-only config',
+  'internal-only diff',
+  'internal-only log',
+  'internal-only relative-cat',
+  'internal-only repo-info',
+  'internal-only root',
+  'internal-only status',
+  'internal-only templates',
+]);
 
 export async function graphite(
   args: yargs.Arguments & TGlobalArguments,
@@ -50,6 +97,21 @@ export async function graphiteWithoutRepo(
   });
 }
 
+function recoveryBlocksReconciliation(): boolean {
+  try {
+    const operation = latestOperation({ readOnly: true });
+    return Boolean(
+      operation?.pending ||
+        operation?.restoringRefs ||
+        operation?.abortingRebase
+    );
+  } catch {
+    // Unknown or damaged journals must block mutations, not diagnostic reads.
+    // Without a known checkpoint, don't reconcile or repair stack metadata.
+    return true;
+  }
+}
+
 async function graphiteInternal(
   args: yargs.Arguments & TGlobalArguments,
   canonicalName: string,
@@ -69,6 +131,10 @@ async function graphiteInternal(
     // eslint-disable-next-line no-restricted-syntax
     process.exit(1);
   });
+  let stackStore: StackStore | undefined;
+  let switchRepo: Repository | undefined;
+  let switchState: SwitchState | undefined;
+  const readOnly = READ_ONLY_COMMANDS.has(canonicalName);
   const git = composeGit();
   const contextLite = initContextLite({
     ...args,
@@ -84,7 +150,10 @@ async function graphiteInternal(
           user: contextLite.userEmail ?? 'NotFound',
           version: version,
           gtInteractive: process.env.GRAPHITE_INTERACTIVE ? 'true' : 'false',
-          processArgv: process.argv.join(' '),
+          processArgv:
+            canonicalName === 'auth'
+              ? 'gt auth [redacted]'
+              : process.argv.join(' '),
         },
       },
       async () => {
@@ -93,11 +162,33 @@ async function graphiteInternal(
           return;
         }
 
-        const context = initContext(contextLite, git, args);
+        const repo = new Repository(process.cwd());
+        if (
+          !['init', 'repo init'].includes(canonicalName) &&
+          !repositoryInitialized(repo)
+        )
+          throw new ExitFailedError(INITIALIZATION_REQUIRED);
+        stackStore = readOnly ? StackStore.tryOpen() : await StackStore.open();
+        if (readOnly && stackStore && recoveryBlocksReconciliation()) {
+          // Mirror exports and parser repairs would invalidate the journal's
+          // checkpoint. Use the existing lock-free, non-reconciling read path
+          // until continue/abort (or an interrupted undo) finishes recovery.
+          stackStore.close();
+          stackStore = undefined;
+        }
+        switchRepo = repo;
+        switchState = assertCandidateEnabled(switchRepo);
+        const context = initContext(contextLite, git, {
+          ...args,
+          readOnly: readOnly && !stackStore,
+        });
+        context.githubStacks = stackStore;
         return await graphiteHelper(
           canonicalName,
           handlerMaybeWithCacheLock,
-          context
+          context,
+          Boolean(args['dry-run']),
+          readOnly
         );
       }
     );
@@ -109,6 +200,34 @@ async function graphiteInternal(
       process.stdout.write(err.stack.toString());
     }
     process.exitCode = 1;
+  } finally {
+    finalizeCommand({
+      contextLite,
+      readOnly,
+      stackStore,
+      switchRepo,
+      switchState,
+    });
+  }
+}
+
+/** Persist the switch configuration, then release the mirror. */
+function finalizeCommand(state: {
+  contextLite: TContextLite;
+  readOnly: boolean;
+  stackStore?: StackStore;
+  switchRepo?: Repository;
+  switchState?: SwitchState;
+}): void {
+  try {
+    // Read-only commands change no configuration, and may no longer hold the lock.
+    if (state.switchRepo && !state.readOnly)
+      recordCandidateConfig(state.switchRepo, state.switchState);
+  } catch (error) {
+    handleGraphiteError(error, state.contextLite);
+    process.exitCode = 1;
+  } finally {
+    state.stackStore?.close();
   }
 }
 
@@ -116,28 +235,66 @@ async function graphiteInternal(
 async function graphiteHelper(
   canonicalName: string,
   handler: TGraphiteCommandHandlerWithCacheLock,
-  context: TContext
+  context: TContext,
+  dryRun = false,
+  readOnly = false
 ): Promise<{
   cacheBefore: string;
   cacheAfter: string;
 }> {
   const cacheBefore = context.engine.debug;
+  let operation: Operation | undefined;
+  const store = context.githubStacks;
+  // github status shows the mirror without changing it.
+  const mirror =
+    store && !dryRun && canonicalName !== 'github status' ? store : undefined;
+  // A read-only command that acquired the lock persists before releasing it;
+  // without the lock, the engine stamps the cache for the refs it parsed.
+  const persistLater = !readOnly || !store;
+  const persistCache = () => {
+    try {
+      context.engine.persist();
+    } catch (persistError) {
+      context.engine.clear();
+      context.splog.debug(`Failed to persist Graphite cache`);
+    }
+  };
 
   try {
-    refreshPRInfoInBackground(context);
-
     if (
-      canonicalName !== 'repo init' &&
+      !['init', 'repo init'].includes(canonicalName) &&
       !context.repoConfig.graphiteInitialized()
     ) {
-      context.splog.info(
-        `Graphite has not been initialized, attempting to setup now...`
-      );
-      context.splog.newline();
-      await init({}, context);
+      throw new ExitFailedError(INITIALIZATION_REQUIRED);
     }
 
+    if (mirror && canonicalName !== 'github import') {
+      importLocalStacks(context, mirror);
+    }
+    if (readOnly) {
+      // Publish the reconciled mirror and cache, then let others proceed while
+      // this command prints, pages, or waits on GitHub.
+      if (mirror) exportLocalStacks(context, mirror);
+      if (store) {
+        persistCache();
+        store.close();
+      }
+    } else if (canonicalName === 'continue') {
+      const pending = latestOperation();
+      assertNoRollbackInProgress(pending);
+      if (
+        pending?.pending &&
+        context.engine.rebaseInProgress() &&
+        context.continueConfig.data.rebasedBranchBase
+      ) {
+        operation = pending;
+        recordOperationWorktreeMoves(operation);
+      }
+    } else {
+      operation = beginOperation(canonicalName, dryRun);
+    }
     await handler.run(context);
+    if (mirror && !readOnly) exportLocalStacks(context, mirror);
   } catch (err) {
     if (
       err.constructor === DetachedError &&
@@ -149,13 +306,12 @@ async function graphiteHelper(
     }
     throw err;
   } finally {
+    if (persistLater) persistCache();
     try {
-      context.engine.persist();
-    } catch (persistError) {
-      context.engine.clear();
-      context.splog.debug(`Failed to persist Graphite cache`);
+      finishOperation(operation, context.engine.rebaseInProgress());
+    } finally {
+      handler.cacheLock.release();
     }
-    handler.cacheLock.release();
   }
 
   return { cacheBefore, cacheAfter: context.engine.debug };

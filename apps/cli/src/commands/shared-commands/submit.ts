@@ -22,6 +22,18 @@ export const command = 'submit';
  *
  */
 export const args = {
+  reconcile: {
+    describe:
+      'Explicitly prefer local topology when GitHub membership diverges. May unstack/recreate native Stack objects; never deletes PRs.',
+    type: 'string',
+    choices: ['local'],
+  },
+  'stack-sync': {
+    describe:
+      'Synchronize native GitHub Stacks as well as PRs. Use --no-stack-sync only when the Stacks API is unavailable.',
+    type: 'boolean',
+    default: true,
+  },
   draft: {
     describe:
       'If set, marks PR as draft. If --no-interactive is true, new PRs will be created in draft mode.',

@@ -4,7 +4,7 @@ import { TBranchPRInfo } from '../lib/engine/metadata_ref';
 
 export async function showBranchInfo(
   branchName: string,
-  opts: { patch: boolean; diff: boolean; body: boolean },
+  opts: { patch: boolean; diff: boolean; body: boolean; stat?: boolean },
   context: TContext
 ): Promise<void> {
   const output = getBranchInfo({ branchName }, context);
@@ -16,8 +16,8 @@ export async function showBranchInfo(
 
   const children = context.engine.getChildren(branchName);
   if (children.length) {
+    // Native 1.8.6 prints the heading only; `gt children` lists the names.
     output.push(`${chalk.cyan('Children')}:`);
-    output.concat(children.map((c) => `▸ ${c}`));
   }
 
   const body = opts.body && context.engine.getPrInfo(branchName)?.body;
@@ -26,12 +26,13 @@ export async function showBranchInfo(
     output.push(body);
   }
 
+  const patch = opts.patch && !opts.diff;
   output.push('');
-  output.push(context.engine.showCommits(branchName, opts.patch && !opts.diff));
+  output.push(context.engine.showCommits(branchName, patch, opts.stat));
 
-  if (opts.diff) {
+  if (opts.diff || (opts.stat && !patch)) {
     output.push('');
-    output.push(context.engine.showDiff(branchName));
+    output.push(context.engine.showDiff(branchName, opts.stat));
   }
 
   context.splog.page(output.join('\n'));
@@ -42,6 +43,7 @@ export function getBranchInfo(
     branchName: string;
     displayAsCurrent?: boolean;
     showCommitNames?: 'STANDARD' | 'REVERSE';
+    worktreeName?: string;
   },
   context: TContext
 ): string[] {
@@ -49,84 +51,95 @@ export function getBranchInfo(
     ? undefined
     : context.engine.getPrInfo(args.branchName);
 
+  // With commit names, one process returns both the committer date and the
+  // commit lines for the whole range instead of one process per field.
+  const commits = args.showCommitNames
+    ? context.engine
+        .getAllCommits(args.branchName, 'READABLE_WITH_DATE')
+        .map((entry) => {
+          const separator = entry.indexOf('\x1f');
+          return separator < 0
+            ? { committerDate: '', readable: entry }
+            : {
+                committerDate: entry.slice(0, separator),
+                readable: entry.slice(separator + 1),
+              };
+        })
+    : undefined;
+  const committerDate = commits
+    ? commits[0]?.committerDate ?? ''
+    : context.engine.getAllCommits(args.branchName, 'COMMITTER_DATE')[0] ?? '';
+
   const prTitleLine = getPRTitleLine(prInfo);
+  const status =
+    prInfo?.state === 'MERGED'
+      ? '(merged)'
+      : getBranchStatus(args.branchName, context);
+  // Only display a real Graphite version attached to a known PR. GitHub-only
+  // submissions have no Graphite version number; do not invent one.
+  const version = prInfo?.number
+    ? context.engine.getLastSubmittedVersion(args.branchName)?.versionNumber
+    : undefined;
+  const versionLine =
+    version !== undefined
+      ? chalk.dim(
+          `Last submitted version: v${version}${
+            context.engine.getPublishedRevision(args.branchName) !==
+            context.engine.getRevision(args.branchName)
+              ? ' (local changes, need submit)'
+              : ''
+          }`
+        )
+      : undefined;
   const branchInfoLines = [
     `${
       args.displayAsCurrent
         ? chalk.cyan(`${args.branchName} (current)`)
         : chalk.blueBright(args.branchName)
-    } ${
-      context.engine.isBranchFixed(args.branchName)
-        ? ''
-        : chalk.yellow(`(needs restack)`)
+    }${status ? ` ${chalk.yellow(status)}` : ''}${
+      args.worktreeName ? ` ${chalk.dim(`(${args.worktreeName})`)}` : ''
     }`,
-    `${chalk.dim(
-      context.engine.getAllCommits(args.branchName, 'COMMITTER_DATE')[0] ?? ''
-    )}`,
+    `${chalk.dim(committerDate)}`,
     ...(prTitleLine ? ['', prTitleLine] : []),
     ...(prInfo?.url ? [chalk.magenta(prInfo.url)] : []),
+    ...(versionLine ? [versionLine] : []),
     '',
-    ...(args.showCommitNames
+    ...(commits
       ? getCommitLines(
-          args.branchName,
-          args.showCommitNames === 'REVERSE',
-          context
+          commits.map((commit) => commit.readable),
+          args.showCommitNames === 'REVERSE'
         )
       : []),
   ];
 
   return prInfo?.state === 'MERGED' || prInfo?.state === 'CLOSED'
-    ? branchInfoLines.map((line) => chalk.dim.gray(line))
+    ? branchInfoLines.map((line) => chalk.dim(line))
     : branchInfoLines;
+}
+
+// A frozen branch is intentionally left behind; native gt shows "frozen"
+// instead of also suggesting a restack that would skip it.
+export function getBranchStatus(
+  branchName: string,
+  context: TContext
+): string | undefined {
+  if (context.engine.getPrInfo(branchName)?.state === 'MERGED')
+    return undefined;
+  if (context.engine.isBranchFrozen(branchName)) return '(frozen)';
+  return context.engine.isBranchFixed(branchName)
+    ? undefined
+    : '(needs restack)';
 }
 
 function getPRTitleLine(prInfo: TBranchPRInfo | undefined): string | undefined {
   if (!prInfo?.title || !prInfo?.number) {
     return undefined;
   }
-  const prNumber = `PR #${prInfo.number}`;
-
-  if (prInfo?.state === 'MERGED') {
-    return `${prNumber} (Merged) ${prInfo.title}`;
-  } else if (prInfo?.state === 'CLOSED') {
-    return `${prNumber} (Abandoned) ${chalk.strikethrough(`${prInfo.title}`)}`;
-  } else {
-    return `${chalk.yellow(prNumber)} ${getPRState(prInfo)} ${prInfo.title}`;
-  }
+  return `${chalk.yellow(`PR #${prInfo.number}`)} ${prInfo.title}`;
 }
 
-function getPRState(prInfo: TBranchPRInfo | undefined): string {
-  if (prInfo === undefined) {
-    return '';
-  }
-
-  if (prInfo.isDraft) {
-    return chalk.gray('(Draft)');
-  }
-
-  const reviewDecision = prInfo.reviewDecision;
-  switch (reviewDecision) {
-    case 'APPROVED':
-      return chalk.green('(Approved)');
-    case 'CHANGES_REQUESTED':
-      return chalk.magenta('(Changes Requested)');
-    case 'REVIEW_REQUIRED':
-      return chalk.yellow('(Review Required)');
-    default:
-      // Intentional fallthrough - if there's no review decision, that means that
-      // review isn't required and we can skip displaying a review status.
-      return '';
-  }
-}
-
-function getCommitLines(
-  branchName: string,
-  reverse: boolean,
-  context: TContext
-) {
-  const lines = context.engine
-    .getAllCommits(branchName, 'READABLE')
-    .map((line) => chalk.gray(line));
+function getCommitLines(readableLines: string[], reverse: boolean) {
+  const lines = readableLines.map((line) => chalk.dim(line));
 
   return reverse ? lines.reverse() : lines;
 }

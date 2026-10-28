@@ -17,6 +17,9 @@ export function getCacheLock(): TCacheLock {
         data.timestamp = Date.now();
       });
     },
-    release: () => cacheLockConfigFactory.load().delete(),
+    release: () => {
+      const cacheLockConfig = cacheLockConfigFactory.load();
+      if (cacheLockConfig.data.pid === process.pid) cacheLockConfig.delete();
+    },
   };
 }

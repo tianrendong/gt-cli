@@ -25,7 +25,7 @@ export function getUnstagedChanges(): string {
   });
 }
 
-export function showDiff(left: string, right: string): string {
+export function showDiff(left: string, right: string, stat?: boolean): string {
   return runGitCommand({
     args: [
       `-c`,
@@ -33,6 +33,7 @@ export function showDiff(left: string, right: string): string {
       `--no-pager`,
       `diff`,
       `--no-ext-diff`,
+      ...(stat ? ['--stat'] : []),
       left,
       right,
       `--`,

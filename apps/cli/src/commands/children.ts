@@ -13,5 +13,5 @@ export const handler = async (argv: argsT): Promise<void> =>
     const children = context.engine.getChildren(
       context.engine.currentBranchPrecondition
     );
-    context.splog.info(children.join('\n'));
+    children.forEach((child) => context.splog.info(child));
   });

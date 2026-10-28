@@ -5,7 +5,6 @@ import {
   continueConfigFactory,
   TContinueConfig,
 } from './spiffy/continuation_spf';
-import { prInfoConfigFactory } from './spiffy/pr_info_spf';
 import { repoConfigFactory, TRepoConfig } from './spiffy/repo_config_spf';
 import {
   surveyConfigFactory,
@@ -19,6 +18,7 @@ import { TUserConfig, userConfigFactory } from './spiffy/user_config_spf';
 import { composeSplog, TSplog } from './utils/splog';
 import { NonInteractiveError } from './errors';
 import { gtPrompts, TPrompts } from './utils/prompts_helpers';
+import { StackStore } from './github/stack_file';
 
 export const USER_CONFIG_OVERRIDE_ENV = 'GRAPHITE_USER_CONFIG_PATH' as const;
 
@@ -36,6 +36,7 @@ type TRepoContext = {
   repoConfig: TRepoConfig;
   continueConfig: TContinueConfig;
   engine: TEngine;
+  githubStacks?: StackStore;
 };
 
 export function initContextLite(opts?: {
@@ -47,16 +48,17 @@ export function initContextLite(opts?: {
   const userConfig = userConfigFactory.load(
     process.env[USER_CONFIG_OVERRIDE_ENV]
   );
+  const interactive =
+    !opts?.quiet &&
+    // Confusing, but if invoked from GTI, behave as if `--no-interactive` was passed
+    !process.env.GRAPHITE_INTERACTIVE &&
+    (opts?.interactive ?? true);
   const splog = composeSplog({
     quiet: opts?.quiet,
     outputDebugLogs: opts?.debug,
     tips: userConfig.data.tips,
-    pager: userConfig.getPager(),
+    pager: interactive ? userConfig.getPager() : undefined,
   });
-
-  const interactive =
-    // Confusing, but if invoked from GTI, behave as if `--no-interactive` was passed
-    !process.env.GRAPHITE_INTERACTIVE && (opts?.interactive ?? true);
 
   return {
     splog,
@@ -81,27 +83,34 @@ export function initContext(
   git: TGit,
   opts?: {
     verify?: boolean;
+    /** Lock-free read-only command: write nothing, not even cleanup. */
+    readOnly?: boolean;
   }
 ): TContext {
   const repoConfig = repoConfigFactory.load();
-  if (!rebaseInProgress()) {
+  // Continuation data only means something during a rebase. Locked commands
+  // clear stale data; lock-free readers just ignore it.
+  const rebasing = rebaseInProgress();
+  if (!rebasing && !opts?.readOnly) {
     continueConfigFactory.load().delete();
   }
   const continueConfig = continueConfigFactory.load();
   const engine = composeEngine({
     git,
     trunkName: repoConfig.data.trunk,
-    currentBranchOverride: continueConfig.data.currentBranchOverride,
+    additionalTrunks: repoConfig.data.additionalTrunks,
+    currentBranchOverride: rebasing
+      ? continueConfig.data.currentBranchOverride
+      : undefined,
     splog: contextLite.splog,
     noVerify: !(opts?.verify ?? true),
     remote: repoConfig.getRemote(),
     restackCommitterDateIsAuthorDate:
       contextLite.userConfig.data.restackCommitterDateIsAuthorDate,
+    readOnly: opts?.readOnly,
   });
-  const prInfoConfig = prInfoConfigFactory.loadIfExists();
-  if (prInfoConfig) {
-    prInfoConfig.delete();
-  }
+  // Graphite owns .graphite_pr_info; gt-gh stores PR data in metadata refs.
+  // Leave that cache intact so local inspection does not impair a switch back.
   return {
     ...contextLite,
     repoConfig,

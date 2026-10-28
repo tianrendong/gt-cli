@@ -69,21 +69,24 @@ for (const scene of [new CloneScene()]) {
       );
     });
 
-    it('errors if trunk diverges from remote and force is false', async () => {
+    it('overwrites trunk with the remote version if it diverges', async () => {
       scene.originRepo.createChangeAndCommit('a');
       scene.repo.createChangeAndCommit('b');
-      await expect(
-        syncAction(
-          {
-            pull: true,
-            force: false,
-            delete: false,
-            showDeleteProgress: false,
-            restack: false,
-          },
-          scene.getContext()
-        )
-      ).to.eventually.be.rejectedWith('Killed Graphite early.');
+
+      await syncAction(
+        {
+          pull: true,
+          force: false,
+          delete: false,
+          showDeleteProgress: false,
+          restack: false,
+        },
+        scene.getContext()
+      );
+
+      expect(scene.repo.getRef('refs/heads/main')).to.equal(
+        scene.originRepo.getRef('refs/heads/main')
+      );
     });
 
     it('can reset trunk from remote', async () => {

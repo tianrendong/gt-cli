@@ -40,7 +40,7 @@ const args = {
     alias: 'i',
   },
   update: {
-    describe: `Stage updates to tracked files before creating the branch. Currently treated like --all by this CLI.`,
+    describe: `Stage updates to tracked files only.`,
     demandOption: false,
     default: false,
     type: 'boolean',
@@ -65,7 +65,7 @@ const args = {
     type: 'boolean',
   },
   verbose: {
-    describe: `Show commit diff in editor. Not currently supported by this CLI.`,
+    describe: `Show commit diff in the commit-message editor.`,
     demandOption: false,
     count: true,
     alias: 'v',
@@ -87,12 +87,6 @@ export const handler = async (argv: argsT): Promise<void> =>
         'This GitHub-only CLI does not support Graphite AI branch/message generation. Use --message or omit --ai.'
       );
     }
-    if (argv.verbose) {
-      throw new ExitFailedError(
-        'This GitHub-only CLI does not support gt create --verbose.'
-      );
-    }
-
     if (argv.onto) {
       context.engine.checkoutBranch(argv.onto);
     }
@@ -101,7 +95,9 @@ export const handler = async (argv: argsT): Promise<void> =>
       {
         branchName: argv.name,
         message: argv.message,
-        all: argv.all || argv.update,
+        all: argv.all,
+        update: argv.update,
+        verbose: argv.verbose,
         insert: argv.insert,
         patch: argv.patch,
       },

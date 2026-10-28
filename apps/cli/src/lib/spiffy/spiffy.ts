@@ -3,7 +3,10 @@ import fs from 'fs-extra';
 import os from 'os';
 import path from 'path';
 import { ExitFailedError } from '../errors';
-import { getRepoRootPathPrecondition } from '../preconditions';
+import {
+  getRepoRootPathPrecondition,
+  getWorktreeGitPathPrecondition,
+} from '../preconditions';
 import { cuteString } from '../utils/cute_string';
 
 /**
@@ -35,9 +38,7 @@ export function spiffy<TSpfData, THelperFunctions>(
       if (shouldRemoveBecauseEmpty) {
         fs.removeSync(filePath);
       } else {
-        fs.writeFileSync(filePath, cuteString(_data), {
-          mode: 0o600,
-        });
+        atomicWrite(filePath, cuteString(_data));
       }
     };
     return {
@@ -65,9 +66,38 @@ export function spiffy<TSpfData, THelperFunctions>(
   };
 }
 
+/** Replace the file in one rename. Read-only commands hold no lock while they
+ * read these files, so a reader must never see a truncated write (and then
+ * discard it as malformed). Writes through symlinks, as a plain write would.
+ */
+function atomicWrite(filePath: string, contents: string): void {
+  const target = writeTarget(filePath);
+  const temporary = `${target}.${process.pid}.tmp`;
+  try {
+    fs.writeFileSync(temporary, contents, { mode: 0o600, flag: 'wx' });
+    fs.renameSync(temporary, target);
+  } finally {
+    fs.removeSync(temporary);
+  }
+}
+
+function writeTarget(filePath: string): string {
+  try {
+    return fs.realpathSync(filePath);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+  }
+  // Missing file, or a symlink to a missing file: create the link's target.
+  try {
+    return path.resolve(path.dirname(filePath), fs.readlinkSync(filePath));
+  } catch {
+    return filePath;
+  }
+}
+
 type TDefaultFileLocation = {
   relativePath: string;
-  relativeTo: 'USER_HOME' | 'REPO';
+  relativeTo: 'USER_HOME' | 'REPO' | 'WORKTREE';
 };
 
 type TSpfMutator<TSpfData> = (data: TSpfData) => void;
@@ -106,7 +136,11 @@ function spfAbsolutePaths(
   return (defaultPathOverride ? [defaultPathOverride] : []).concat(
     defaultLocations.map((l) =>
       path.join(
-        l.relativeTo === 'REPO' ? getRepoRootPathPrecondition() : os.homedir(),
+        l.relativeTo === 'REPO'
+          ? getRepoRootPathPrecondition()
+          : l.relativeTo === 'WORKTREE'
+          ? getWorktreeGitPathPrecondition()
+          : os.homedir(),
         l.relativePath
       )
     )

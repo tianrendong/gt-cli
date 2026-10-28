@@ -2,7 +2,8 @@
 import chalk from 'chalk';
 import cp from 'child_process';
 
-const GIT_COMMAND_ALLOWLIST = [
+/** Git verbs `gt` forwards untouched. */
+export const GIT_COMMAND_ALLOWLIST = [
   'add',
   'am',
   'apply',
@@ -53,7 +54,7 @@ export function passthrough(args: string[]): void {
   }
 
   console.log(
-    chalk.grey(
+    chalk.dim(
       [
         `Passing command through to git...`,
         `Running: "${chalk.yellow(`git ${args.slice(2).join(' ')}`)}"\n`,
@@ -62,6 +63,7 @@ export function passthrough(args: string[]): void {
   );
 
   const git = cp.spawnSync('git', args.slice(2), { stdio: 'inherit' });
+  const status = git.status ?? 0;
   // eslint-disable-next-line no-restricted-syntax
-  process.exit(git.status ?? 0);
+  process.exit(status);
 }

@@ -1,5 +1,6 @@
 {
   "name": "@gt-gh/cli-shared-types",
+  "private": true,
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "version": "0.3.2",
@@ -12,8 +13,5 @@
   },
   "files": [
     "dist"
-  ],
-  "publishConfig": {
-    "access": "public"
-  }
+  ]
 }

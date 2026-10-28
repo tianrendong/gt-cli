@@ -11,8 +11,7 @@ const args = {
     hidden: true,
   },
   all: {
-    describe:
-      'Show branches across all configured trunks. This CLI supports one trunk; accepted as no-op.',
+    describe: 'Show branches across every configured trunk.',
     type: 'boolean',
     default: false,
     alias: 'a',
@@ -23,8 +22,7 @@ const args = {
     alias: 'u',
   },
   stack: {
-    describe:
-      'Only show current stack in interactive selection. Not currently filtered by this CLI.',
+    describe: 'Only show the current stack in interactive selection.',
     type: 'boolean',
     default: false,
     alias: 's',
@@ -51,6 +49,8 @@ export const handler = async (argv: argsT): Promise<void> =>
       {
         branchName: argv.trunk ? context.engine.trunk : argv.branch,
         showUntracked: argv['show-untracked'],
+        stack: argv.stack,
+        all: argv.all,
       },
       context
     )

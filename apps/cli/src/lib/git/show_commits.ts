@@ -1,9 +1,9 @@
 import { runGitCommand } from './runner';
 
 export function showCommits(
-  base: string,
+  base: string | undefined,
   head: string,
-  patch?: boolean
+  opts: { patch?: boolean; stat?: boolean } = {}
 ): string {
   return runGitCommand({
     args: [
@@ -11,8 +11,9 @@ export function showCommits(
       `color.ui=always`,
       `--no-pager`,
       `log`,
-      ...(patch ? ['-p'] : []),
-      `${base}..${head}`,
+      ...(base ? [] : ['-1']),
+      ...(opts.patch ? [opts.stat ? '--stat' : '-p'] : []),
+      base ? `${base}..${head}` : head,
       `--`,
     ],
     onError: 'throw',

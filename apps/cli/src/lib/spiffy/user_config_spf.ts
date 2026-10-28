@@ -15,6 +15,15 @@ const schema = t.shape({
   pager: t.optional(t.string),
   restackCommitterDateIsAuthorDate: t.optional(t.boolean),
   submitIncludeCommitMessages: t.optional(t.boolean),
+  cleanupDeleteMerged: t.optional(t.boolean),
+  aliases: t.optional(
+    t.array(
+      t.shape({
+        alias: t.string,
+        command: t.string,
+      })
+    )
+  ),
   connectCliToLocalServer: t.optional(t.boolean),
   gtiConfigs: t.optional(
     t.array(
@@ -40,11 +49,9 @@ export type TProfile = Required<
 
 export type TApiServerUrl = string;
 export type TAppServerUrl = string;
-export const DEFAULT_GRAPHITE_API_SERVER: TApiServerUrl =
-  'https://api.graphite.dev/v1';
-
-export const DEFAULT_GRAPHITE_APP_SERVER: TAppServerUrl =
-  'https://app.graphite.dev';
+export const DEFAULT_GITHUB_API_SERVER: TApiServerUrl =
+  'https://api.github.com';
+export const DEFAULT_GITHUB_APP_SERVER: TAppServerUrl = 'https://github.com';
 
 export const userConfigFactory = spiffy({
   schema,
@@ -58,50 +65,16 @@ export const userConfigFactory = spiffy({
     return {};
   },
   helperFunctions: (data) => {
-    // Read the user config and return a host prefix.
-    // If none specified, default to empty string.
-    const getDefaultProfile = (): TProfile => {
-      const alternativeProfiles = data.alternativeProfiles ?? [];
-      if (process.env.GRAPHITE_PROFILE) {
-        const alternativeProfile = alternativeProfiles.find(
-          (p) => p.name === process.env.GRAPHITE_PROFILE
-        );
-        if (alternativeProfile) {
-          return alternativeProfile;
-        } else {
-          throw new Error(`Unknown profile ${process.env.GRAPHITE_PROFILE}`);
-        }
-      }
-      const optionalDefaultProfile = alternativeProfiles.find(
-        (p) => p.name === 'default'
-      );
-      if (optionalDefaultProfile) {
-        return optionalDefaultProfile;
-      } else {
-        return {
-          name: 'default',
-          hostPrefix: '',
-        };
-      }
-    };
-
-    const getApiServerUrl = (): TApiServerUrl => {
-      if (data.connectCliToLocalServer) {
-        process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-        return 'https://localhost:8000/v1';
-      }
-      const hostPrefix = getDefaultProfile().hostPrefix;
-      return hostPrefix
-        ? `https://api.${hostPrefix}.graphite.dev/v1`
-        : DEFAULT_GRAPHITE_API_SERVER;
-    };
-
-    const getAppServerUrl = (): TAppServerUrl => {
-      const hostPrefix = getDefaultProfile().hostPrefix;
-      return hostPrefix
-        ? `https://app.${hostPrefix}.graphite.dev`
-        : DEFAULT_GRAPHITE_APP_SERVER;
-    };
+    // Accept legacy profile fields when migrating, but never connect to a
+    // Graphite service or weaken TLS based on old configuration.
+    const getApiServerUrl = (): TApiServerUrl =>
+      process.env.GH_HOST && process.env.GH_HOST !== 'github.com'
+        ? `https://${process.env.GH_HOST}/api/v3`
+        : DEFAULT_GITHUB_API_SERVER;
+    const getAppServerUrl = (): TAppServerUrl =>
+      process.env.GH_HOST
+        ? `https://${process.env.GH_HOST}`
+        : DEFAULT_GITHUB_APP_SERVER;
 
     const getEditor = () => {
       return (
@@ -136,7 +109,10 @@ export const userConfigFactory = spiffy({
       getAppServerUrl,
       getPager,
       execEditor: (editFilePath: string) => {
-        const command = `${getEditor()} ${editFilePath}`;
+        const command = `${getEditor()} '${editFilePath.replace(
+          /'/g,
+          "'\\''"
+        )}'`;
         try {
           execSync(command, { stdio: 'inherit', encoding: 'utf-8' });
         } catch (e) {

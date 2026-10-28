@@ -1,0 +1,32 @@
+#!/bin/sh
+set -eu
+SCRIPT=$0
+while [ -L "$SCRIPT" ]; do
+  LINK=$(readlink "$SCRIPT")
+  case "$LINK" in /*) SCRIPT=$LINK;; *) SCRIPT="$(dirname -- "$SCRIPT")/$LINK";; esac
+done
+ROOT=$(CDPATH= cd -- "$(dirname -- "$SCRIPT")/.." && pwd -P)
+. "$ROOT/scripts/installation/output.sh"
+COMMAND=${1:---help}
+if [ "$#" -gt 0 ]; then shift; fi
+case "$COMMAND" in
+  install)
+    if [ -L "$ROOT/.runtime-node" ]; then
+      gt_cli_print 2 red 'Installation is complete. Use gt-cli update to download and activate latest release.' >&2
+      exit 1
+    fi
+    exec "$ROOT/install.sh" "$@";;
+  update|config|graphite|forget) exec "$ROOT/scripts/installation/run.sh" "$ROOT" "$COMMAND" "$@";;
+  enable|disable) exec "$ROOT/$COMMAND.sh" "$@";;
+  -h|--help)
+    if [ ! -L "$ROOT/.runtime-node" ]; then gt_cli_print 1 cyan 'Initial setup: npx @tianrendong/gt-cli install'; fi
+    gt_cli_print 1 cyan \
+      'gt-cli update' \
+      'gt-cli enable [--repo PATH | --global]' \
+      'gt-cli disable [--repo PATH | --global]' \
+      'gt-cli forget [--repo PATH | --missing] [--dry-run]' \
+      'gt-cli graphite <enable|disable|status|reset> [--global | --repo PATH]' \
+      'gt-cli config submit.graphite [true|false] [--global | --repo PATH]'
+    gt_cli_print 1 dim 'Stack commands stay gt. New repositories need gt init --trunk BRANCH.';;
+  *) gt_cli_print 2 red "Unknown management command: $COMMAND. Use gt for stack commands." >&2; exit 1;;
+esac

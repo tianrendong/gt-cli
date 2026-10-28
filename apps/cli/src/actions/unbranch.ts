@@ -11,7 +11,7 @@ export function unbranch(context: TContext): void {
   }
   context.engine.unbranch();
   context.splog.info(
-    `Unbranched ${chalk.red(currentBranchName)}. Now on ${chalk.blueBright(
+    `Popped ${chalk.red(currentBranchName)}. Now on ${chalk.blueBright(
       parentBranchName
     )}.`
   );

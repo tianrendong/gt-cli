@@ -29,8 +29,7 @@ const args = {
     alias: 'p',
   },
   stat: {
-    describe:
-      'Show a diffstat instead of a full diff. Not currently supported by this CLI.',
+    describe: 'Show a diffstat instead of a full diff.',
     default: false,
     type: 'boolean',
     alias: 's',
@@ -47,7 +46,7 @@ export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) => {
     await showBranchInfo(
       argv.branch ?? context.engine.currentBranchPrecondition,
-      { patch: argv.patch, diff: argv.diff || argv.stat, body: argv.body },
+      { patch: argv.patch, diff: argv.diff, stat: argv.stat, body: argv.body },
       context
     );
   });

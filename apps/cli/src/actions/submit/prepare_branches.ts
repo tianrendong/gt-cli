@@ -8,6 +8,7 @@ import { getReviewers } from './reviewers';
 import { TPRSubmissionInfo } from './submit_prs';
 import { PreconditionsFailedError } from '../../lib/errors';
 import { getGithubAuthorizationStatus } from '../../commands/auth';
+import { TSubmitEditMode } from './submit_action';
 
 type TPRSubmissionAction = { branchName: string } & (
   | { update: false }
@@ -31,7 +32,8 @@ type TPRSubmissionAction = { branchName: string } & (
 export async function getPRInfoForBranches(
   args: {
     branchNames: string[];
-    editPRFieldsInline: boolean | undefined;
+    editTitle: TSubmitEditMode;
+    editBody: TSubmitEditMode;
     draft: boolean;
     publish: boolean;
     updateOnly: boolean;
@@ -39,6 +41,7 @@ export async function getPRInfoForBranches(
     reviewers: string | undefined;
     select: boolean;
     always: boolean;
+    targetTrunk?: string;
   },
   context: TContext
 ): Promise<TPRSubmissionInfo> {
@@ -52,8 +55,8 @@ export async function getPRInfoForBranches(
         publish: args.publish,
         dryRun: args.dryRun,
         select: args.select,
-        editPRFieldsInline: args.editPRFieldsInline,
-        always: args.always,
+        editPRFieldsInline: args.editTitle === 'all' || args.editBody === 'all',
+        always: args.always || !!args.reviewers,
       },
       context
     );
@@ -64,6 +67,12 @@ export async function getPRInfoForBranches(
     const parentBranchName = context.engine.getParentPrecondition(
       action.branchName
     );
+    // --target-trunk only overrides which remote trunk PRs are opened
+    // against; it never rebases or reparents local branches.
+    const base =
+      args.targetTrunk && context.engine.isTrunk(parentBranchName)
+        ? args.targetTrunk
+        : parentBranchName;
 
     const isGithubAuthPresent = cliAuthPrecondition(context);
 
@@ -72,7 +81,8 @@ export async function getPRInfoForBranches(
         ? await getPRCreationInfo(
             {
               branchName: action.branchName,
-              editPRFieldsInline: args.editPRFieldsInline,
+              editTitle: args.editTitle,
+              editBody: args.editBody,
               draft: args.draft,
               publish: args.publish,
               reviewers: args.reviewers,
@@ -89,7 +99,7 @@ export async function getPRInfoForBranches(
     submissionInfo.push({
       head: action.branchName,
       headSha: context.engine.getRevision(action.branchName),
-      base: parentBranchName,
+      base,
       baseSha: context.engine.getRevision(parentBranchName),
       ...(action.update
         ? {
@@ -98,7 +108,8 @@ export async function getPRInfoForBranches(
             ...(await getPRUpdateInfo(
               {
                 branchName: action.branchName,
-                editPRFieldsInline: args.editPRFieldsInline,
+                editTitle: args.editTitle,
+                editBody: args.editBody,
                 draft: args.draft,
                 publish: args.publish,
                 reviewers: args.reviewers,
@@ -166,7 +177,9 @@ async function getPRAction(
   );
 
   const shouldSkipUpdate =
-    args.always === false && (args.dryRun || status === 'NOOP');
+    args.dryRun ||
+    (args.updateOnly && prNumber === undefined) ||
+    (args.always === false && status === 'NOOP');
 
   return shouldSkipUpdate
     ? undefined
@@ -181,7 +194,8 @@ async function getPRAction(
 async function getPRCreationInfo(
   args: {
     branchName: string;
-    editPRFieldsInline: boolean | undefined;
+    editTitle: TSubmitEditMode;
+    editBody: TSubmitEditMode;
     draft: boolean;
     publish: boolean;
     reviewers: string | undefined;
@@ -193,7 +207,7 @@ async function getPRCreationInfo(
   reviewers: string[];
   draft: boolean;
 }> {
-  if (args.editPRFieldsInline) {
+  if (args.editTitle !== 'none' || args.editBody !== 'none') {
     context.splog.newline();
     context.splog.info(
       `Enter info for new pull request for ${chalk.cyan(
@@ -210,7 +224,7 @@ async function getPRCreationInfo(
     submitInfo.title = await getPRTitle(
       {
         branchName: args.branchName,
-        editPRFieldsInline: args.editPRFieldsInline,
+        editPRFieldsInline: args.editTitle === 'none' ? false : undefined,
       },
       context
     );
@@ -218,7 +232,12 @@ async function getPRCreationInfo(
     submitInfo.body = await getPRBody(
       {
         branchName: args.branchName,
-        editPRFieldsInline: args.editPRFieldsInline,
+        editPRFieldsInline:
+          args.editBody === 'none'
+            ? false
+            : args.editBody === 'all'
+            ? true
+            : undefined,
       },
       context
     );
@@ -249,7 +268,8 @@ async function getPRCreationInfo(
 async function getPRUpdateInfo(
   args: {
     branchName: string;
-    editPRFieldsInline: boolean | undefined;
+    editTitle: TSubmitEditMode;
+    editBody: TSubmitEditMode;
     draft: boolean;
     publish: boolean;
     reviewers: string | undefined;
@@ -262,7 +282,7 @@ async function getPRUpdateInfo(
   draft: boolean | undefined;
 }> {
   const submitInfo: TBranchPRInfo = {};
-  if (args.editPRFieldsInline) {
+  if (args.editTitle === 'all' || args.editBody === 'all') {
     context.splog.newline();
     context.splog.info(
       `Enter updated info for pull request for ${chalk.cyan(
@@ -273,22 +293,26 @@ async function getPRUpdateInfo(
     );
 
     try {
-      submitInfo.title = await getPRTitle(
-        {
-          branchName: args.branchName,
-          editPRFieldsInline: args.editPRFieldsInline,
-        },
-        context
-      );
-
-      const prInfo = context.engine.getPrInfo(args.branchName);
-      if (prInfo === undefined) {
-        context.splog.warn(
-          'Cannot find existing PR body; starting from scratch'
+      if (args.editTitle === 'all') {
+        submitInfo.title = await getPRTitle(
+          {
+            branchName: args.branchName,
+            editPRFieldsInline: undefined,
+          },
+          context
         );
       }
-      const body = prInfo?.body || '';
-      submitInfo.body = await editPRBody(body, context);
+
+      if (args.editBody === 'all') {
+        const prInfo = context.engine.getPrInfo(args.branchName);
+        if (prInfo === undefined) {
+          context.splog.warn(
+            'Cannot find existing PR body; starting from scratch'
+          );
+        }
+        const body = prInfo?.body || '';
+        submitInfo.body = await editPRBody(body, context);
+      }
     } finally {
       // Save locally in case this command fails
       context.engine.upsertPrInfo(args.branchName, submitInfo);

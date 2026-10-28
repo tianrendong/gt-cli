@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import { TContext } from '../../lib/context';
 import { ExitFailedError, KilledError } from '../../lib/errors';
+import { branchesCheckedOutElsewhere } from '../../lib/git/worktrees';
 import { syncPrInfo } from '../sync_pr_info';
 
 export async function validateBranchesToSubmit(
@@ -101,12 +102,21 @@ function validateBaseRevisions(branchNames: string[], context: TContext): void {
       }
     } else if (validatedBranches.has(parentBranchName)) {
       if (!context.engine.isBranchFixed(branchName)) {
+        const directory = branchesCheckedOutElsewhere().get(branchName);
         throw new ExitFailedError(
           [
             `You are trying to submit at least one branch that has not been restacked on its parent.`,
-            `To resolve this, check out ${chalk.yellow(
-              branchName
-            )} and run ${chalk.cyan(`gt upstack restack`)}.`,
+            directory
+              ? `${chalk.yellow(
+                  branchName
+                )} is checked out in worktree ${JSON.stringify(
+                  directory
+                )}. Commit or stash any changes there, then run ${chalk.cyan(
+                  'gt upstack restack'
+                )} from that worktree.`
+              : `To resolve this, check out ${chalk.yellow(
+                  branchName
+                )} and run ${chalk.cyan(`gt upstack restack`)}.`,
           ].join('\n')
         );
       }

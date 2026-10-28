@@ -4,14 +4,13 @@ import { KilledError, RebaseConflictError } from '../../lib/errors';
 import { assertUnreachable } from '../../lib/utils/assert_unreachable';
 import { persistContinuation } from '../persist_continuation';
 import { printConflictStatus } from '../print_conflict_status';
+import { GetOptions, getGitHubStack } from './github_get';
 
 export async function getAction(
-  _args: { branchName: string | undefined; force: boolean },
+  args: GetOptions,
   context: TContext
 ): Promise<void> {
-  context.splog.message(
-    '⚠️ This command is not yet implemented in this GitHub-only Graphite CLI.\n\nPlease check out the issue on GitHub https://github.com/tianrendong/gt-gh/issues/6'
-  );
+  await getGitHubStack(args, context);
 }
 
 export async function getBranchesFromRemote(

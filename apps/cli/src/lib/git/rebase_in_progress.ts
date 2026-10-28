@@ -1,15 +1,18 @@
 import fs from 'fs-extra';
 import path from 'path';
+import { getGitDir } from './git_dir';
 import { runGitCommand } from './runner';
 
 export function rebaseInProgress(options?: { cwd: string }): boolean {
   let rebaseDir = path.join(
-    runGitCommand({
-      args: [`rev-parse`, `--git-dir`],
-      options,
-      onError: 'throw',
-      resource: 'rebaseInProgress',
-    }),
+    options?.cwd
+      ? runGitCommand({
+          args: [`rev-parse`, `--git-dir`],
+          options,
+          onError: 'throw',
+          resource: 'rebaseInProgress',
+        })
+      : getGitDir(),
     'rebase-merge'
   );
   if (options?.cwd) {

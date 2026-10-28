@@ -5,19 +5,24 @@ import {
   trackedUncommittedChanges,
   unstagedChanges,
 } from './git/git_status_utils';
-import { runGitCommand } from './git/runner';
+import { getGitCommonDir, getGitDir, getGitTopLevel } from './git/git_dir';
 
 export function getRepoRootPathPrecondition(): string {
-  const repoRootPath = runGitCommand({
-    args: [`rev-parse`, `--git-common-dir`],
-    onError: 'ignore',
-    resource: 'getRepoRootPathPrecondition',
-  });
+  const repoRootPath = getGitCommonDir();
 
   if (!repoRootPath) {
     throw new PreconditionsFailedError('No .git repository found.');
   }
   return repoRootPath;
+}
+
+export function getWorktreeGitPathPrecondition(): string {
+  const worktreeGitPath = getGitDir();
+
+  if (!worktreeGitPath) {
+    throw new PreconditionsFailedError('No .git repository found.');
+  }
+  return worktreeGitPath;
 }
 
 export function uncommittedTrackedChangesPrecondition(): void {
@@ -43,11 +48,7 @@ export function ensureSomeStagedChangesPrecondition(context: TContext): void {
 }
 
 export function currentGitRepoPrecondition(): string {
-  const repoRootPath = runGitCommand({
-    args: [`rev-parse`, `--show-toplevel`],
-    onError: 'ignore',
-    resource: 'currentGitRepoPrecondition',
-  });
+  const repoRootPath = getGitTopLevel();
   if (!repoRootPath) {
     throw new PreconditionsFailedError('No .git repository found.');
   }

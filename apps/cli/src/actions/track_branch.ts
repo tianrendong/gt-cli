@@ -8,13 +8,15 @@ export async function trackBranchInteractive(
   context: TContext
 ): Promise<boolean> {
   const parentBranchName = context.engine.currentBranchPrecondition;
+  const descendants = context.engine.isTrunk(parentBranchName)
+    ? undefined
+    : context.engine.getDescendantBranchNames(parentBranchName);
   const choices = context.engine.allBranchNames
     .filter(
       (branchName) =>
         !context.engine.isTrunk(branchName) &&
         !context.engine.isBranchTracked(branchName) &&
-        (context.engine.isTrunk(parentBranchName) ||
-          context.engine.isDescendantOf(branchName, parentBranchName))
+        (!descendants || descendants.has(branchName))
     )
     .map((branchName) => ({ title: branchName, value: branchName }));
 
@@ -53,22 +55,29 @@ function getPotentialParents(
   },
   context: TContext
 ): { title: string; value: string }[] {
+  // One ref scan per branch instead of one merge-base per (branch, candidate)
+  // pair; in large repos each merge-base costs tens of milliseconds.
+  const ancestorCache = new Map<string, Set<string>>();
+  const ancestorsOf = (branchName: string): Set<string> => {
+    let ancestors = ancestorCache.get(branchName);
+    if (!ancestors) {
+      ancestors = context.engine.getAncestorBranchNames(branchName);
+      ancestorCache.set(branchName, ancestors);
+    }
+    return ancestors;
+  };
   return context.engine.allBranchNames
     .filter(
       (potentialParentBranchName) =>
         context.engine.isTrunk(potentialParentBranchName) ||
         ((!args.onlyTrackedParents ||
           context.engine.isBranchTracked(potentialParentBranchName)) &&
-          context.engine.isDescendantOf(
-            args.branchName,
-            potentialParentBranchName
-          ))
+          ancestorsOf(args.branchName).has(potentialParentBranchName))
     )
     .sort((left, right) => {
       return left === right
         ? 0
-        : context.engine.isTrunk(right) ||
-          context.engine.isDescendantOf(left, right)
+        : context.engine.isTrunk(right) || ancestorsOf(left).has(right)
         ? -1 // left is a descendant of right
         : 1; // left is not a descendant of right
     })
@@ -217,9 +226,12 @@ function trackHelper(
   context: TContext
 ) {
   context.engine.trackBranch(branchName, parentBranchName);
+  const commitCount = context.engine.getAllCommits(branchName, 'SHA').length;
   context.splog.info(
-    `Tracked branch ${chalk.green(branchName)} with parent ${chalk.cyan(
+    `Tracked branch ${chalk.green(branchName)} with parent ${chalk.blueBright(
       parentBranchName
+    )} ${chalk.dim(
+      `(includes ${commitCount} commit${commitCount === 1 ? '' : 's'})`
     )}.`
   );
 }

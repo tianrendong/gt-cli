@@ -1,29 +1,38 @@
 import { TContext } from '../lib/context';
 import { SCOPE } from '../lib/engine/scope_spec';
 import { ensureSomeStagedChangesPrecondition } from '../lib/preconditions';
-import { BlockedDuringRebaseError } from '../lib/errors';
+import { BlockedDuringRebaseError, ExitFailedError } from '../lib/errors';
 import { restackBranches } from './restack';
+import { stageChanges } from './stage_changes';
 
-export function commitCreateAction(
+export async function commitCreateAction(
   opts: {
     addAll: boolean;
     patch: boolean;
     message?: string;
+    update?: boolean;
+    verbose?: number;
   },
   context: TContext
-): void {
+): Promise<void> {
   if (context.engine.rebaseInProgress()) {
     throw new BlockedDuringRebaseError();
   }
 
-  if (opts.addAll) {
-    context.engine.addAll();
-  }
+  context.engine.assertBranchMutable(context.engine.currentBranchPrecondition);
+  await stageChanges(
+    { all: opts.addAll, update: opts.update, patch: opts.patch, offer: 'ALL' },
+    context
+  );
 
   ensureSomeStagedChangesPrecondition(context);
+  if (!context.interactive && !opts.message)
+    throw new ExitFailedError(
+      'Supply --message when creating a commit non-interactively.'
+    );
   context.engine.commit({
     message: opts.message,
-    patch: !opts.addAll && opts.patch,
+    verbose: opts.verbose,
   });
 
   restackBranches(

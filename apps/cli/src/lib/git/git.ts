@@ -1,4 +1,4 @@
-import { addAll } from './add_all';
+import { addAll, addUpdates } from './add_all';
 import {
   deleteBranch,
   forceCheckoutNewBranch,
@@ -36,9 +36,21 @@ import { isMerged } from './is_merged';
 import { logLong } from './log';
 import { getMergeBase } from './merge_base';
 import { getUnmergedFiles, getRebaseHead } from './merge_conflict_help';
-import { pruneRemote } from './prune_remote';
+import { pruneRemote, pruneRemoteAsync } from './prune_remote';
 import { pullBranch } from './pull_branch';
 import { pushBranch } from './push_branch';
+import { replayBranch, replayCommits } from './replay';
+import {
+  branchesContaining,
+  branchesMergedInto,
+  fetchRemoteBranches,
+  isAncestor,
+  listRemoteHeads,
+  mergeFastForward,
+  remoteTrackingRevisions,
+  updateRef,
+} from './ref_ops';
+import { branchesCheckedOutElsewhere, moveCheckedOutBranch } from './worktrees';
 import {
   rebase,
   rebaseContinue,
@@ -62,6 +74,7 @@ function composeGitInternal() {
   return {
     ...composeGetRemoteSha(),
     addAll,
+    addUpdates,
     getCommitAuthor,
     getCommitDate,
     getFilesChanged,
@@ -98,12 +111,25 @@ function composeGitInternal() {
     getUnmergedFiles,
     getRebaseHead,
     pruneRemote,
+    pruneRemoteAsync,
     showCommits,
     getFileContents,
     pullBranch,
     pushBranch,
     rebaseInProgress,
     rebase,
+    replayBranch,
+    replayCommits,
+    fetchRemoteBranches,
+    listRemoteHeads,
+    remoteTrackingRevisions,
+    isAncestor,
+    branchesMergedInto,
+    branchesContaining,
+    mergeFastForward,
+    updateRef,
+    branchesCheckedOutElsewhere,
+    moveCheckedOutBranch,
     rebaseContinue,
     rebaseAbort,
     rebaseInteractive,

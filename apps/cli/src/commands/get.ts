@@ -3,6 +3,12 @@ import { getAction } from '../actions/sync/get';
 import { graphite } from '../lib/runner';
 
 const args = {
+  'stack-sync': {
+    describe:
+      'Discover native GitHub stacks. --no-stack-sync follows PR base branches instead.',
+    type: 'boolean',
+    default: true,
+  },
   branch: {
     describe: 'Branch or PR number to get from remote.',
     demandOption: false,
@@ -11,19 +17,17 @@ const args = {
     hidden: true,
   },
   checkout: {
-    describe:
-      'Check out target branch after syncing. Accepted for compatibility.',
+    describe: 'Check out the target branch after fetching.',
     type: 'boolean',
     default: true,
   },
   'delete-all': {
-    describe:
-      'Delete merged or closed branches during get. Not separately configurable in this CLI.',
+    describe: 'Delete merged or closed local branches after fetching.',
     type: 'boolean',
     default: false,
   },
   downstack: {
-    describe: `Don't sync upstack branches. gt get is downstack-only.`,
+    describe: `Fetch only ancestors through the target branch.`,
     type: 'boolean',
     default: false,
     alias: 'd',
@@ -35,19 +39,20 @@ const args = {
     alias: 'f',
   },
   restack: {
-    describe: 'Restack branches after get. Accepted for compatibility.',
+    describe: 'Restack fetched branches and their local descendants.',
     type: 'boolean',
     default: true,
   },
   unfrozen: {
     describe:
-      'Checkout new branches as unfrozen. This CLI has no freeze support.',
+      'Unfreeze fetched branches. Existing freeze settings are otherwise preserved.',
     type: 'boolean',
     default: false,
     alias: 'U',
   },
   'remote-upstack': {
-    describe: 'Include upstack PRs when fetching. Not supported by this CLI.',
+    describe:
+      'Fetch upstack PRs too, including forks across native GitHub stacks.',
     type: 'boolean',
     default: false,
     alias: 'u',
@@ -64,5 +69,20 @@ export const builder = args;
 
 export const handler = async (argv: argsT): Promise<void> =>
   graphite(argv, canonical, async (context) =>
-    getAction({ branchName: argv.branch, force: argv.force }, context)
+    getAction(
+      {
+        branchName: argv.branch,
+        force: argv.force,
+        checkout: argv.checkout,
+        restack: argv.restack,
+        downstack: argv.downstack,
+        remoteUpstack: argv['remote-upstack'],
+        stackSync: argv['stack-sync'],
+        unfrozen: argv.unfrozen,
+        deleteAll:
+          argv['delete-all'] ||
+          context.userConfig.data.cleanupDeleteMerged === true,
+      },
+      context
+    )
   );

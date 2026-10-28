@@ -21,7 +21,7 @@ module.exports = {
     "no-restricted-syntax": [
       "error",
       {
-        "message": "Banned `exit` function. Please exit execution through return statements so as to not skip telemetry.",
+        "message": "Banned `exit` function. Please exit execution through return statements so as to not skip cleanup.",
         "selector": "MemberExpression > Identifier[name=\"exit\"]"
       }
     ]

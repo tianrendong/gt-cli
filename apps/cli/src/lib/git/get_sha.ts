@@ -49,7 +49,7 @@ function fetchRemoteShas(remote: string) {
 
   runGitCommandAndSplitLines({
     args: [`ls-remote`, '--heads', remote],
-    onError: 'ignore',
+    onError: 'throw',
     resource: 'fetchRemoteShas',
   })
     // sample line of output

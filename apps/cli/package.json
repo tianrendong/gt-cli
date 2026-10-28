@@ -1,14 +1,15 @@
 {
-  "name": "gt-gh",
-  "version": "0.1.5",
-  "description": "GitHub-only stacked changes CLI compatible with Graphite-style gt commands.",
+  "name": "@tianrendong/gt-cli",
+  "version": "0.6.46",
+  "description": "gt CLI with GitHub Stack synchronization and optional Graphite submission.",
   "license": "AGPL-3.0-only",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
-  "homepage": "https://github.com/tianrendong/gt-gh",
+  "homepage": "https://github.com/tianrendong/gt-cli#readme",
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/tianrendong/gt-gh.git"
+    "url": "git+https://github.com/tianrendong/gt-cli.git",
+    "directory": "apps/cli"
   },
   "keywords": [
     "git",
@@ -23,35 +24,25 @@
     "chalk": "^4.1.2",
     "fast-json-stable-hash": "^1.0.3",
     "fs-extra": "^10.1.0",
+    "https-proxy-agent": "^7.0.6",
+    "koffi": "^2.14.1",
     "prompts": "^2.4.2",
+    "proxy-from-env": "^1.1.0",
     "semver": "^7.3.7",
     "strip-ansi": "^6.0.1",
     "tmp": "^0.2.1",
     "yargs": "^17.5.1"
   },
-  "pkg": {
-    "scripts": "dist/src/**/*.js",
-    "assets": [
-      "dist/src/commands/**/*",
-      "dist/src/lib/gt.fish"
-    ],
-    "targets": [
-      "node18-macos",
-      "node18-linux"
-    ],
-    "outputPath": "pkg"
-  },
   "publishConfig": {
-    "access": "public"
+    "access": "restricted",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "prepack": "corepack yarn build",
-    "prepublishOnly": "corepack yarn build",
-    "postinstall": "node scripts/node_version.js || node dist/scripts/node_version.js",
+    "prepack": "node ../../.yarn/releases/yarn-3.2.1.cjs workspace @tianrendong/gt-cli build && node scripts/package-source.cjs",
+    "prepublishOnly": "node ../../.yarn/releases/yarn-3.2.1.cjs workspace @tianrendong/gt-cli build",
     "lint": "eslint src --quiet --ext .ts --cache",
     "check": "tsc --noEmit",
-    "build": "rm -rf dist/ && yarn lint && tsc && cp scripts/node_version.js dist/scripts/node_version.js && cp src/lib/gt.fish dist/src/lib/gt.fish",
-    "build-pkg": "pkg dist/src/index.js -c package.json --public-packages \"*\"",
+    "build": "rm -rf dist/ && yarn lint && tsc && node scripts/command-manifest.cjs && cp scripts/node_version.js dist/scripts/node_version.js && cp src/lib/gt.fish dist/src/lib/gt.fish",
     "dev": "./scripts/installation/develop.sh",
     "cli": "node ./dist/src/index.js",
     "test": "tsc && yarn mocha \"dist/test/**/*.test.js\"  --parallel --jobs 8",
@@ -64,15 +55,37 @@
   },
   "files": [
     "dist/src",
-    "dist/scripts",
+    "dist/scripts/node_version.js",
+    "dist/scripts/installation/output.cjs",
+    "dist/scripts/installation/disable.cjs",
+    "dist/scripts/installation/native_escape.cjs",
+    "dist/scripts/migrate-from-graphite.cjs",
+    "dist/scripts/sqlite.cjs",
     "dist/package.json",
-    "README.md"
+    "README.md",
+    "USAGE.md",
+    "LICENSE",
+    "source.tar.gz",
+    "enable.sh",
+    "disable.sh",
+    "install.sh",
+    "bin/gt-cli",
+    "scripts/installation/install.cjs",
+    "scripts/installation/install_tools.cjs",
+    "scripts/installation/output.cjs",
+    "scripts/installation/output.sh",
+    "scripts/installation/run.sh",
+    "scripts/installation/disable.cjs",
+    "scripts/installation/disable-native.sh",
+    "scripts/installation/native_escape.cjs",
+    "scripts/installation/update.cjs"
   ],
-  "bin": {
-    "gt": "dist/src/index.js"
-  },
+  "bin": "bin/gt-cli",
   "engines": {
     "node": ">=18"
+  },
+  "runtimeEngines": {
+    "node": "^22.16.0 || >=24.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.1",
@@ -82,6 +95,7 @@
     "@types/node": "^17.0.40",
     "@types/prettier": "^2",
     "@types/prompts": "^2.4.3",
+    "@types/proxy-from-env": "^1.0.4",
     "@types/semver": "^7",
     "@types/tmp": "^0.2.3",
     "@types/yargs": "^17.0.10",
@@ -98,7 +112,6 @@
     "nock": "^13.2.6",
     "nyc": "^15.1.0",
     "pinst": "^3.0.0",
-    "pkg": "^5.8.1",
     "prettier": "^2.8.3",
     "ts-node": "^10.8.1",
     "typescript": "^4.7.3"

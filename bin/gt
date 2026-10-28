@@ -1,0 +1,9 @@
+#!/bin/sh
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+CLI="$ROOT/apps/cli/dist/src/gt_cli.js"
+if [ ! -f "$CLI" ]; then
+  printf '%s\n' "gt is not built. Run: cd \"$ROOT\" && npm run build" >&2
+  exit 1
+fi
+exec "${GT_NODE_BIN:-node}" "$CLI" "$@"

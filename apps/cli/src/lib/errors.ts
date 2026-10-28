@@ -45,7 +45,7 @@ export class DetachedError extends Error {
 
 export class NoBranchError extends Error {
   constructor(branchName: string) {
-    super(`Could not find branch ${chalk.yellow(branchName)}.`);
+    super(`Could not find branch ${branchName}.`);
     this.name = 'NoBranchError';
   }
 }
@@ -54,12 +54,8 @@ export class UntrackedBranchError extends Error {
   constructor(branchName: string) {
     super(
       [
-        `Cannot perform this operation on untracked branch ${chalk.yellow(
-          branchName
-        )}.`,
-        `You can track it by specifying its parent with ${chalk.cyan(
-          `gt branch track`
-        )}.`,
+        `Cannot perform this operation on untracked branch ${branchName}.`,
+        `You can track it by specifying its parent with gt track.`,
       ].join('\n')
     );
     this.name = 'UntrackedBranchError';
@@ -67,8 +63,14 @@ export class UntrackedBranchError extends Error {
 }
 
 export class BadTrunkOperationError extends Error {
-  constructor() {
-    super(`Cannot perform this operation on the trunk branch.`);
+  // Native gt names the offending branch for stack-rewriting commands
+  // (squash, move, absorb) and omits it elsewhere.
+  constructor(branchName?: string) {
+    super(
+      `Cannot perform this operation on the trunk branch.${
+        branchName ? `\n\n${branchName}` : ''
+      }`
+    );
     this.name = 'BadTrunkOperationError';
   }
 }

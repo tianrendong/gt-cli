@@ -25,14 +25,18 @@ export async function switchBranchAction(
     await checkoutBranch({ branchName: newBranchName }, context);
     return;
   }
-  context.splog.info(
-    `Already at the ${
-      branchNavigation.direction === 'DOWN' ||
-      branchNavigation.direction === 'BOTTOM'
-        ? 'bottom most'
-        : 'top most'
-    } branch in the stack.`
-  );
+  const message =
+    branchNavigation.direction === 'DOWN' ||
+    branchNavigation.direction === 'BOTTOM'
+      ? 'Already at the bottom most branch in the stack.'
+      : 'Already at the top of the stack.';
+  if (
+    branchNavigation.direction === 'UP' ||
+    branchNavigation.direction === 'DOWN'
+  ) {
+    throw new ExitFailedError(message);
+  }
+  context.splog.info(message);
 }
 
 async function traverseBranches(
@@ -101,7 +105,6 @@ async function traverseUpward(
     children.length === 1
       ? children[0]
       : await handleMultipleChildren(children, context);
-  context.splog.info('⮑  ' + childBranchName);
   return await traverseUpward(
     childBranchName,
     context,

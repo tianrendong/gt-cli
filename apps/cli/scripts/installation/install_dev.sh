@@ -1,4 +1,4 @@
-#!/bin/bash
-
-cd $(dirname $0)
-npm install --location=global ../../
+#!/bin/sh
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+exec "$ROOT/install.sh" "$@"

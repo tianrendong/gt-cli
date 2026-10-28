@@ -4,7 +4,9 @@ import fs from 'fs-extra';
 import path from 'path';
 import tmp from 'tmp';
 import { TContext } from '../lib/context';
-import { SCOPE, TScopeSpec } from '../lib/engine/scope_spec';
+import { TScopeSpec } from '../lib/engine/scope_spec';
+import { ExitFailedError } from '../lib/errors';
+import { uncommittedTrackedChangesPrecondition } from '../lib/preconditions';
 
 type TTestStatus =
   | '[pending]'
@@ -25,11 +27,14 @@ export function testStack(
   opts: { scope: TScopeSpec; includeTrunk?: boolean; command: string },
   context: TContext
 ): void {
+  uncommittedTrackedChangesPrecondition();
   const currentBranch = context.engine.currentBranchPrecondition;
   // Get branches to test.
   const branches = context.engine
-    .getRelativeStack(currentBranch, SCOPE.STACK)
+    .getRelativeStack(currentBranch, opts.scope)
     .filter((branch) => opts.includeTrunk || !context.engine.isTrunk(branch));
+  if (opts.includeTrunk && !branches.includes(context.engine.trunk))
+    branches.unshift(context.engine.trunk);
 
   // Initialize state to print out.
   const state: TTestState = {};
@@ -42,21 +47,20 @@ export function testStack(
 
   // Kick off the testing.
   logState(state, false, context);
-  branches.forEach((branchName) =>
-    testBranch(
-      { command: opts.command, branchName, tmpDirName, state },
-      context
-    )
-  );
-
-  context.splog.info(
-    `Output files: ${chalk.gray(
-      `/var/folders/gg/xctw127s4hs8gzlcdtghgzdr0000gn/T/tmp-31480-L1GLB4ngiQkT/`
-    )}`
-  );
-
-  // Finish off.
-  context.engine.checkoutBranch(currentBranch);
+  try {
+    branches.forEach((branchName) =>
+      testBranch(
+        { command: opts.command, branchName, tmpDirName, state },
+        context
+      )
+    );
+  } finally {
+    context.splog.info(`Output files: ${chalk.gray(tmpDirName)}`);
+    context.engine.checkoutBranch(currentBranch);
+  }
+  if (Object.values(state).some((branch) => branch.status !== '[success]')) {
+    throw new ExitFailedError('Stack tests failed. See output files above.');
+  }
 }
 
 function testBranch(
@@ -105,7 +109,7 @@ function testBranch(
 }
 
 function logState(state: TTestState, refresh: boolean, context: TContext) {
-  if (refresh) {
+  if (refresh && process.stdout.isTTY) {
     process.stdout.moveCursor(0, -Object.keys(state).length);
   }
   Object.keys(state).forEach((branchName) => {
@@ -122,7 +126,7 @@ function logState(state: TTestState, refresh: boolean, context: TContext) {
     const durationString: string | undefined = duration
       ? new Date(duration).toISOString().split(/T/)[1].replace(/\..+/, '')
       : undefined;
-    process.stdout.clearLine(0);
+    if (process.stdout.isTTY) process.stdout.clearLine(0);
     // Example:
     // - [success]: tr--Track_CLI_and_Graphite_user_assoicat (00:00:22)
     context.splog.info(

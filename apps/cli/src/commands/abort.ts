@@ -1,6 +1,8 @@
 import yargs from 'yargs';
 import { clearContinuation } from '../actions/persist_continuation';
 import { graphite } from '../lib/runner';
+import { ExitFailedError } from '../lib/errors';
+import { latestOperation, restoreOperation } from '../lib/operations/journal';
 
 const args = {
   force: {
@@ -34,7 +36,15 @@ export const handler = async (argv: argsT): Promise<void> =>
     ) {
       return;
     }
-    context.engine.abortRebase();
+    const operation = latestOperation();
+    if (operation?.pending) {
+      // restoreOperation reports the aborted invocation, like native gt.
+      restoreOperation(operation, context, true);
+    } else if (context.engine.rebaseInProgress()) {
+      context.engine.abortRebase();
+      context.splog.info('Aborted rebase.');
+    } else {
+      throw new ExitFailedError('No Graphite operation to abort.');
+    }
     clearContinuation(context);
-    context.splog.info('Aborted rebase.');
   });

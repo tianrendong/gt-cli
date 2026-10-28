@@ -1,29 +1,45 @@
 import yargs from 'yargs';
 import { graphite } from '../lib/runner';
+import { ExitFailedError } from '../lib/errors';
+import { deleteMetadataRef } from '../lib/engine/metadata_ref';
 
-const args = {
+export const command = 'trunk';
+export const description =
+  'Show the current stack trunk, list configured trunks, or add another trunk.';
+export const builder = {
   add: {
-    describe:
-      'Add an additional trunk. Multiple trunks are not supported by this GitHub-only CLI.',
-    type: 'boolean',
-    default: false,
+    describe: 'Register an existing local branch as an additional trunk.',
+    type: 'string',
   },
   all: {
-    describe: 'Show all configured trunks. This CLI supports one trunk.',
+    describe: 'Show every configured trunk.',
     type: 'boolean',
     default: false,
     alias: 'a',
   },
 } as const;
-
-type argsT = yargs.Arguments<yargs.InferredOptionTypes<typeof args>>;
-
-export const command = 'trunk';
-export const canonical = 'trunk';
-export const description = 'Show the trunk of the current branch.';
-export const builder = args;
-export const handler = async (argv: argsT): Promise<void> =>
-  graphite(argv, canonical, async (context) => {
-    void argv;
-    context.splog.info(context.engine.trunk);
+export const handler = async (
+  argv: yargs.Arguments<yargs.InferredOptionTypes<typeof builder>>
+): Promise<void> =>
+  graphite(argv, argv.add ? 'trunk add' : 'trunk', async (context) => {
+    if (argv.add) {
+      if (!context.engine.branchExists(argv.add))
+        throw new ExitFailedError(
+          `No local branch ${argv.add}. Fetch it first.`
+        );
+      context.engine.assertBranchMutable(argv.add);
+      context.repoConfig.update((data) => {
+        data.additionalTrunks = [
+          ...new Set([...(data.additionalTrunks ?? []), argv.add as string]),
+        ].filter((b) => b !== data.trunk);
+      });
+      deleteMetadataRef(argv.add);
+      context.engine.rebuild(
+        undefined,
+        context.repoConfig.data.additionalTrunks
+      );
+    }
+    context.splog.info(
+      argv.all ? context.engine.trunks.join('\n') : context.engine.trunk
+    );
   });

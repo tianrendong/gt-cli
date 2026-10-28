@@ -1,7 +1,9 @@
 /* eslint-disable no-console */
 import chalk from 'chalk';
 import { execSync } from 'child_process';
+import { version } from '../../../package.json';
 import { CommandFailedError } from '../git/runner';
+import { tracer } from './tracer';
 
 export type TSplog = {
   newline: () => void;
@@ -22,32 +24,35 @@ export function composeSplog(
     pager?: string;
   } = {}
 ): TSplog {
+  const warn = (s: string) => console.error(chalk.yellow(`WARNING: ${s}`));
   return {
     newline: opts.quiet ? () => void 0 : () => console.log(),
     info: opts.quiet ? () => void 0 : (s: string) => console.log(s),
     debug: opts.outputDebugLogs
       ? (s: string) =>
           console.log(
-            chalk.dim(`${chalk.bold(`${new Date().toISOString()}:`)} ${s}`)
+            JSON.stringify({
+              cliVersion: version,
+              level: 'debug',
+              message: s,
+              timestamp: new Date().toISOString(),
+              traceId: tracer.traceId,
+            })
           )
       : () => void 0,
-    error: (s: string) => console.log(chalk.redBright(`ERROR: ${s}`)),
-    warn: (s: string) => console.log(chalk.yellow(`WARNING: ${s}`)),
+    error: (s: string) => console.error(chalk.redBright(`ERROR: ${s} `)),
+    warn,
     message: (s: string) => console.log(chalk.yellow(`${chalk.yellow(s)}\n\n`)),
     tip: (s: string) =>
       opts.tips && !opts.quiet
-        ? console.log(
-            chalk.gray(
-              [
-                '',
-                `${chalk.bold('tip')}: ${s}`,
-                chalk.italic('Feeling expert? `gt user tips --disable`'),
-                '',
-              ].join('\n')
-            )
+        ? console.error(
+            chalk.dim(['', `${chalk.yellow('tip')}: ${s}`, ''].join('\n'))
           )
-        : () => void 0,
+        : undefined,
     page: (s: string) => {
+      if (opts.quiet) return;
+      // Native gt pages whenever interactive features are enabled, even when
+      // stdout is redirected. Callers decide interactivity; do not re-check TTY.
       if (!opts.pager) {
         console.log(s);
         return;
@@ -64,14 +69,12 @@ export function composeSplog(
       } catch (e) {
         if (e.status !== 0 || e.code !== 'EPIPE') {
           console.log(s);
-          console.log(
-            chalk.yellow(
-              `NOTE: Tried to send output to your pager (${chalk.cyan(
-                opts.pager
-              )}) but encountered an error.\nYou can change your configured pager or disable paging: ${chalk.cyan(
-                `gt user pager --help`
-              )}`
-            )
+          warn(
+            `Tried to send output to your pager (${chalk.cyan(
+              opts.pager
+            )}) but encountered an error.\nYou can change your configured pager or disable paging in ${chalk.cyan(
+              `gt config`
+            )}`
           );
           throw new CommandFailedError({
             command: opts.pager,

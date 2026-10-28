@@ -54,7 +54,8 @@ export abstract class AbstractScene {
     const context = initContext(
       initContextLite({
         interactive,
-        quiet: !process.env.DEBUG,
+        // Quiet implies non-interactive, including in prompt-driven tests.
+        quiet: !interactive && !process.env.DEBUG,
         debug: !!process.env.DEBUG,
       }),
       composeGit(),

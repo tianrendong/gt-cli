@@ -90,6 +90,7 @@ class Span {
 }
 
 class Tracer {
+  readonly traceId = traceId;
   currentSpanId: number | undefined;
   allSpans: Span[] = [];
 
@@ -147,6 +148,29 @@ class Tracer {
     }
     span.end(result);
     this.currentSpanId = span.parentId;
+    return result;
+  }
+
+  /** A span that starts no spans of its own, e.g. one subprocess. It never
+   * becomes the current span, so concurrent leaf spans all nest under the
+   * caller's span and leave the current span as they found it. */
+  public async leafSpan<T extends spanReturnT>(
+    opts: {
+      resource: string;
+      name: spanNameT;
+      meta?: Record<string, string>;
+    },
+    handler: () => Promise<T>
+  ): Promise<T> {
+    const span = this.startSpan(opts);
+    let result: T;
+    try {
+      result = await handler();
+    } catch (err) {
+      span.end(undefined, err as Error);
+      throw err;
+    }
+    span.end(result);
     return result;
   }
 

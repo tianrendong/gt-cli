@@ -8,6 +8,7 @@ const schema = t.shape({
   owner: t.optional(t.string),
   name: t.optional(t.string),
   trunk: t.optional(t.string),
+  additionalTrunks: t.optional(t.array(t.string)),
   remote: t.optional(t.string),
   lastFetchedPRInfoMs: t.optional(t.number),
   isGithubIntegrationEnabled: t.optional(t.boolean),
@@ -31,6 +32,30 @@ export const repoConfigFactory = spiffy({
       },
 
       getRemote: () => data.remote ?? 'origin',
+
+      // Resolve the three fields together, without caching across commands,
+      // hooks, config edits, or repository changes in the same process.
+      getRepoIdentity(): { host: string; owner: string; name: string } {
+        const inferred =
+          data.host && data.owner && data.name
+            ? undefined
+            : inferRepoGitHubInfo(data.remote ?? 'origin');
+        const identity = {
+          host: data.host || inferred!.repoHost,
+          owner: data.owner || inferred!.repoOwner,
+          name: data.name || inferred!.repoName,
+        };
+        // Malformed remotes can parse to an empty host/name. Preserve the
+        // existing getters' validation and error ordering on that rare path.
+        if (!identity.host || !identity.owner || !identity.name) {
+          return {
+            host: this.getRepoHost(),
+            owner: this.getRepoOwner(),
+            name: this.getRepoName(),
+          };
+        }
+        return identity;
+      },
 
       setTrunk: (trunk: string) => {
         update((data) => (data.trunk = trunk));
@@ -110,7 +135,7 @@ function inferRepoGitHubInfo(remote: string): {
   });
 
   const inferError = new ExitFailedError(
-    `Failed to infer the owner and name of this repo from remote ${remote} "${url}". Please run \`gt repo owner --set <owner>\` and \`gt repo name --set <name>\` to manually set the repo owner/name. (e.g. in the repo 'tianrendong/gt-gh', 'tianrendong' is the repo owner and 'gt-gh' is the repo name)`
+    `Failed to infer the owner and name of this repo from remote ${remote}. Please run \`gt repo owner --set <owner>\` and \`gt repo name --set <name>\` to manually set the repo owner/name. (e.g. in the repo 'tianrendong/gt-gh', 'tianrendong' is the repo owner and 'gt-gh' is the repo name)`
   );
   if (!url) {
     throw inferError;
@@ -147,17 +172,30 @@ function inferRepoGitHubInfo(remote: string): {
 export function getOwnerAndNameFromURL(
   url: string
 ): { name: string; owner: string; hostname: string } | null {
+  if (/^(?:https?|(?:git\+)?ssh):\/\//.test(url)) {
+    try {
+      const parsed = new URL(url.replace(/^git\+ssh:/, 'ssh:'));
+      const parts = parsed.pathname
+        .replace(/^\//, '')
+        .replace(/\/$/, '')
+        .split('/');
+      if (parts.length !== 2 || parts.some((part) => !part)) return null;
+      // URL.host excludes credentials; never copy a token-bearing authority
+      // into a gh --repo argument or the gh-stack metadata file.
+      return {
+        hostname: parsed.host,
+        owner: parts[0],
+        name: parts[1].replace(/\.git$/, ''),
+      };
+    } catch {
+      return null;
+    }
+  }
   const match =
-    /(?:https:\/\/(.*)\/|(?:git\+ssh:\/\/|ssh:\/\/)?(?:git@)?([^:/]*)[:/])([^/]+)\/(.+?)(?:\.git)?$/.exec(
+    /^(?:(?:git\+)?ssh:)?(?:[^@/]+@)?([^:/]+)[:/]([^/]+)\/([^/]+?)(?:\.git)?$/.exec(
       url
     );
-
-  if (match == null) {
-    return null;
-  }
-
-  const [, hostname1, hostname2, owner, repo] = match;
-  return { owner, name: repo, hostname: hostname1 ?? hostname2 };
+  return match ? { hostname: match[1], owner: match[2], name: match[3] } : null;
 }
 
 export type TRepoConfig = ReturnType<typeof repoConfigFactory.load>;

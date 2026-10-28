@@ -1,9 +1,6 @@
-#!/bin/bash
-
-# A single command to uninstall, rebuild, and reinstall for development
-cd "$(dirname "$0")" || exit
-./uninstall.sh
-rm -rf ../../dist
-yarn build
-jq '.version = "local"' ../../dist/package.json > ../../dist/tmp_file.json && mv ../../dist/tmp_file.json ../../dist/package.json
-./install_dev.sh
+#!/bin/sh
+set -eu
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/../.." && pwd)
+cd "$ROOT"
+npm run prepack
+printf '\nBuilt gt. Native installation was not changed.\nRun: %s/enable.sh --repo /path/to/repository --dry-run\n' "$ROOT"

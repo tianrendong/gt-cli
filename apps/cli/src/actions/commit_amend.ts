@@ -5,32 +5,44 @@ import {
   BlockedDuringRebaseError,
 } from '../lib/errors';
 import { restackBranches } from './restack';
+import { stageChanges } from './stage_changes';
 
-export function commitAmendAction(
+export async function commitAmendAction(
   opts: {
     addAll: boolean;
     message?: string;
     noEdit: boolean;
     patch: boolean;
+    update?: boolean;
+    resetAuthor?: boolean;
+    verbose?: number;
   },
   context: TContext
-): void {
-  if (context.engine.isBranchEmpty(context.engine.currentBranchPrecondition)) {
+): Promise<void> {
+  if (
+    context.engine.getAllCommits(
+      context.engine.currentBranchPrecondition,
+      'SHA'
+    ).length === 0
+  ) {
     throw new PreconditionsFailedError('No commits in this branch to amend');
   }
   if (context.engine.rebaseInProgress()) {
     throw new BlockedDuringRebaseError();
   }
 
-  if (opts.addAll) {
-    context.engine.addAll();
-  }
+  context.engine.assertBranchMutable(context.engine.currentBranchPrecondition);
+  await stageChanges(
+    { all: opts.addAll, update: opts.update, patch: opts.patch, offer: 'ALL' },
+    context
+  );
 
   context.engine.commit({
     amend: true,
     noEdit: opts.noEdit,
     message: opts.message,
-    patch: !opts.addAll && opts.patch,
+    resetAuthor: opts.resetAuthor,
+    verbose: opts.verbose,
   });
 
   if (!opts.noEdit) {

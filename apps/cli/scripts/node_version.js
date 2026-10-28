@@ -1,5 +1,6 @@
 /* eslint-disable */
-const requiredVersion = '>=v18';
+const pkg = require('../package.json');
+const requiredVersion = (pkg.runtimeEngines || pkg.engines).node;
 const semver = require('semver');
 
 try {
@@ -13,6 +14,6 @@ try {
   }
 } catch {
   console.error(
-    `Unable to validate Node.js version. Note that Graphite requires v18 or higher.`
+    `Unable to validate Node.js version. Required: ${requiredVersion}.`
   );
 }

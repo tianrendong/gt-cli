@@ -47,6 +47,45 @@ export function runGitCommand(params: TRunGitCommandParameters): string {
     : runGitCommandInternal(params);
 }
 
+/** Best-effort bounded binary reads. Callers must retain their normal Git
+ * fallback when this returns undefined. Trace the real subprocess without
+ * decoding byte-framed output.
+ */
+export function runGitReadBatch(params: {
+  args: string[];
+  input: string;
+  maxBuffer: number;
+  resource: string;
+}): Buffer | undefined {
+  let output: Buffer | undefined;
+  const read = (): Record<string, string> => {
+    const result = spawnSync('git', params.args, {
+      input: Buffer.from(params.input, 'utf8'),
+      encoding: 'buffer',
+      maxBuffer: params.maxBuffer,
+      windowsHide: true,
+    });
+    if (!result.error && result.status === 0) output = result.stdout;
+    return {
+      exitCode: String(result.status),
+      signal: result.signal ?? '',
+      syscallError: result.error?.message ?? '',
+      bytes: String(result.stdout?.length ?? 0),
+    };
+  };
+  if (tracer.currentSpanId)
+    tracer.spanSync(
+      {
+        name: 'spawnedCommand',
+        resource: params.resource,
+        meta: { runCommandArgs: cuteString({ args: params.args }) },
+      },
+      read
+    );
+  else read();
+  return output;
+}
+
 export type TRunAsyncGitCommandParameters = {
   args: string[];
   options?: SpawnOptions & {
@@ -59,9 +98,10 @@ export type TRunAsyncGitCommandParameters = {
 export function runAsyncGitCommand(
   params: TRunAsyncGitCommandParameters
 ): Promise<string> {
-  // Only measure if we're with an existing span.
+  // Only measure if we're with an existing span. Several may run at once
+  // (e.g. sync's divergence counts), so each is a leaf of the caller's span.
   return params.resource && tracer.currentSpanId
-    ? tracer.span(
+    ? tracer.leafSpan(
         {
           name: 'spawnedCommand',
           resource: params.resource,
@@ -132,6 +172,10 @@ function runAsyncGitCommandInternal(
       stdio: ['pipe', 'pipe', 'pipe'],
     });
 
+    // e.g. spawn failures (EAGAIN, EMFILE): reject rather than crash on an
+    // unhandled 'error' event or leave the promise pending.
+    proc.on('error', reject);
+
     let stdout = '';
     proc.stdout.setEncoding('utf8');
     proc.stdout.on('data', function (data) {
@@ -179,6 +223,8 @@ function runAsyncGitCommandInternal(
 }
 
 export class CommandFailedError extends Error {
+  readonly status: number;
+
   constructor(failure: {
     command: string;
     args: string[];
@@ -199,10 +245,13 @@ export class CommandFailedError extends Error {
       ].join('\n')
     );
     this.name = 'CommandFailed';
+    this.status = failure.status;
   }
 }
 
 export class CommandKilledError extends Error {
+  readonly signal: string;
+
   constructor(failure: {
     command: string;
     args: string[];
@@ -219,5 +268,6 @@ export class CommandKilledError extends Error {
       ].join('\n')
     );
     this.name = 'CommandKilled';
+    this.signal = failure.signal;
   }
 }

@@ -22,7 +22,10 @@ export class CloneScene extends AbstractScene {
       this.tmpDir,
     ];
 
-    this.dir = tmp.dirSync().name;
+    // The scene must point at the clone, including tmpDir: getContext()
+    // builds the engine in tmpDir, so a stale tmpDir would read origin's refs.
+    this.tmpDir = tmp.dirSync();
+    this.dir = this.tmpDir.name;
     this.repo = new GitRepo(this.dir, { repoUrl: this.originDir });
     fs.writeFileSync(
       `${this.dir}/.git/.graphite_repo_config`,

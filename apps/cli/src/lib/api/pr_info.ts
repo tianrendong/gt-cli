@@ -1,5 +1,7 @@
-import { execFileSync } from 'child_process';
 import * as t from '../retype';
+import { GitHubClient } from '../github/client';
+import { ExitFailedError } from '../errors';
+import { repoConfigFactory, TRepoConfig } from '../spiffy/repo_config_spf';
 
 const reviewDecisionSchema = t.optional(
   t.unionMany([
@@ -8,9 +10,9 @@ const reviewDecisionSchema = t.optional(
     t.literal('CHANGES_REQUESTED' as const),
   ])
 );
-
 export const prInfoToUpsertSchema = t.array(
   t.shape({
+    id: t.optional(t.string),
     state: t.unionMany([
       t.literal('OPEN' as const),
       t.literal('MERGED' as const),
@@ -21,90 +23,67 @@ export const prInfoToUpsertSchema = t.array(
     body: t.string,
     prNumber: t.number,
     headRefName: t.string,
+    /** Remote head revision GitHub reports; sync compares it with the local branch. */
+    headRefOid: t.optional(t.string),
     baseRefName: t.string,
     reviewDecision: reviewDecisionSchema,
     isDraft: t.boolean,
   })
 );
-
 export type TPRInfoToUpsert = t.TypeOf<typeof prInfoToUpsertSchema>;
 
-type TBranchNameWithPrNumber = {
-  branchName: string;
-  prNumber: number | undefined;
-};
-
 export async function getPrInfoForBranches(
-  branchNamesWithExistingPrInfo: TBranchNameWithPrNumber[]
+  branches: { branchName: string; prNumber: number | undefined }[],
+  config: TRepoConfig = repoConfigFactory.load()
 ): Promise<TPRInfoToUpsert> {
-  // We sync branches without existing PR info by name.  For branches
-  // that are already associated with a PR, we only sync if both the
-  // the associated PR (keyed by number) if the name matches the headRef.
-
-  const branchesWithoutPrInfo = new Set<string>();
-  const existingPrInfo = new Map<number, string>();
-
-  branchNamesWithExistingPrInfo.forEach((branch) => {
-    if (branch?.prNumber === undefined) {
-      branchesWithoutPrInfo.add(branch.branchName);
-    } else {
-      existingPrInfo.set(branch.prNumber, branch.branchName);
-    }
-  });
-
-  try {
-    const response: TPRInfoToUpsert = [];
-
-    // Gh CLI allows for looking up by pr number of branch name
-    for (const prId of [...existingPrInfo.keys(), ...branchesWithoutPrInfo]) {
-      try {
-        const pr = await JSON.parse(
-          execFileSync('gh', [
-            'pr',
-            'view',
-            `${prId}`,
-            '--json',
-            'state,url,title,body,number,headRefName,baseRefName,reviewDecision,isDraft',
-          ]).toString()
-        );
-
-        pr.prNumber = pr.number;
-        delete pr.number;
-
-        if (pr.reviewDecision === '') {
-          pr.reviewDecision = undefined;
-        }
-
-        if (prInfoToUpsertSchema([pr])) {
-          response.push(pr);
-        }
-      } catch (error) {
-        if (
-          error instanceof Error &&
-          error.message.includes('no pull requests found')
-        ) {
-          continue;
-        }
-
-        throw error;
-      }
-    }
-
-    return response.filter((pr) => {
-      const branchNameIfAssociated = existingPrInfo.get(pr.prNumber);
-
-      const shouldAssociatePrWithBranch =
-        !branchNameIfAssociated &&
-        pr.state === 'OPEN' &&
-        branchesWithoutPrInfo.has(pr.headRefName);
-
-      const shouldUpdateExistingBranch =
-        branchNameIfAssociated === pr.headRefName;
-
-      return shouldAssociatePrWithBranch || shouldUpdateExistingBranch;
+  if (!branches.length) return [];
+  const client = GitHubClient.fromConfig(config);
+  // Independent read-only queries: run them concurrently.
+  const [known, unlinked] = await Promise.all([
+    client.viewPRsAsync(
+      branches.flatMap((branch) =>
+        branch.prNumber === undefined ? [] : [branch.prNumber]
+      )
+    ),
+    client.viewOpenPRsByBranchAsync(
+      branches.flatMap((branch) =>
+        branch.prNumber === undefined ? [branch.branchName] : []
+      )
+    ),
+  ]);
+  const result: TPRInfoToUpsert = [];
+  for (const branch of branches) {
+    const pr =
+      branch.prNumber === undefined
+        ? unlinked.get(branch.branchName)
+        : known.get(branch.prNumber);
+    if (
+      !pr ||
+      pr.headRefName !== branch.branchName ||
+      (!branch.prNumber && pr.state !== 'OPEN')
+    )
+      continue;
+    if (pr.isCrossRepository)
+      throw new ExitFailedError(
+        `PR #${pr.number} belongs to a fork. Configure an explicit head remote before syncing or submitting it.`
+      );
+    result.push({
+      id: pr.id,
+      prNumber: pr.number,
+      url: pr.url,
+      title: pr.title,
+      body: pr.body,
+      state: pr.state,
+      headRefName: pr.headRefName,
+      headRefOid: /^[0-9a-f]{40}(?:[0-9a-f]{24})?$/.test(pr.headRefOid ?? '')
+        ? pr.headRefOid
+        : undefined,
+      baseRefName: pr.baseRefName,
+      reviewDecision: pr.reviewDecision || undefined,
+      isDraft: pr.isDraft,
     });
-  } catch {
-    // Preserve old behavior: if remote PR lookup fails, continue without PR info.
-    return [];
   }
+  // Authentication/network errors are not an empty repository. Let the caller
+  // fail before creating duplicate PRs or pruning based on stale metadata.
+  return result;
 }

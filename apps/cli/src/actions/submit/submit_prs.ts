@@ -1,8 +1,7 @@
-import { execFileSync } from 'child_process';
 import chalk from 'chalk';
 import { TContext } from '../../lib/context';
 import { ExitFailedError } from '../../lib/errors';
-import { Unpacked } from '../../lib/utils/ts_helpers';
+import { GitHubClient } from '../../lib/github/client';
 
 export type TPRSubmissionInfo = Array<
   {
@@ -15,182 +14,104 @@ export type TPRSubmissionInfo = Array<
     reviewers: string[];
     draft?: boolean;
   } & (
-    | {
-        action: 'create';
-        title: string;
-        body: string;
-        draft: boolean;
-      }
-    | {
-        action: 'update';
-        prNumber: number;
-      }
+    | { action: 'create'; title: string; body: string; draft: boolean }
+    | { action: 'update'; prNumber: number }
   )
 >;
-
-type TSubmittedPRRequest = Unpacked<TPRSubmissionInfo>;
-
-type TSubmittedPRResponse = {
-  head: string;
-  status: 'created' | 'updated' | 'error';
-  prNumber?: number;
-  prURL?: string;
-  error?: string;
-};
-
-type TSubmittedPR = {
-  request: TSubmittedPRRequest;
-  response: TSubmittedPRResponse;
-};
 
 export async function submitPullRequest(
   submissionInfo: TPRSubmissionInfo,
   context: TContext
 ): Promise<void> {
-  const pr = await requestServerToSubmitPR({
-    submissionInfo,
-  });
-
-  if (pr.response.status === 'error') {
-    throw new ExitFailedError(
-      `Failed to submit PR for ${pr.response.head}: ${pr.response.error}`
+  const client = GitHubClient.fromConfig(context.repoConfig);
+  for (const request of submissionInfo) {
+    const existing = client.viewPR(
+      request.action === 'update' ? request.prNumber : request.head
     );
-  }
-
-  context.engine.upsertPrInfo(pr.response.head, {
-    number: pr.response.prNumber,
-    url: pr.response.prURL,
-    base: pr.request.base,
-    state: 'OPEN', // We know this is not closed or merged because submit succeeded
-    ...(pr.request.action === 'create'
-      ? {
-          title: pr.request.title,
-          body: pr.request.body,
-          reviewDecision: 'REVIEW_REQUIRED' as const, // Because we just opened this PR
-        }
-      : {}),
-    ...(pr.request.draft !== undefined ? { draft: pr.request.draft } : {}),
-  });
-  context.splog.info(
-    `${chalk.green(pr.response.head)}: ${pr.response.prURL} (${(
-      {
-        updated: chalk.yellow,
-        created: chalk.green,
-        error: chalk.red,
-      } as const
-    )[pr.response.status](pr.response.status)})`
-  );
-}
-
-async function requestServerToSubmitPR({
-  submissionInfo,
-}: {
-  submissionInfo: TPRSubmissionInfo;
-}): Promise<TSubmittedPR> {
-  const request = submissionInfo[0];
-
-  try {
-    const response = await submitPrToGitHub({
-      request,
-    });
-
-    return {
-      request,
-      response,
-    };
-  } catch (error) {
-    if (error instanceof Error) {
-      return {
-        response: { error: error.message, status: 'error', head: request.head },
-        request,
-      };
-    }
-
-    throw Error(`Unknown error: ${error}`);
-  }
-}
-
-async function submitPrToGitHub({
-  request,
-}: {
-  request: TSubmittedPRRequest;
-}): Promise<TSubmittedPRResponse> {
-  try {
-    const prInfo = await JSON.parse(
-      execFileSync('gh', [
-        'pr',
-        'view',
-        request.head,
-        '--json',
-        'headRefName,url,number,baseRefName,body',
-      ]).toString()
-    );
-
-    if (prInfo.headRefName !== request.head) {
-      throw Error(
-        `PR head mismatch: ${prInfo.headRefName} !== ${request.head}`
+    if (existing?.isCrossRepository)
+      throw new ExitFailedError(
+        'Fork PR submission requires an explicitly configured head remote; refusing to push to the base repository.'
+      );
+    if (existing && existing.headRefName !== request.head) {
+      throw new ExitFailedError(
+        `PR #${existing.number} does not belong to ${request.head}.`
       );
     }
-
-    const prBaseChanged = prInfo.baseRefName !== request.base;
-
-    if (prBaseChanged) {
-      execFileSync('gh', [
-        'pr',
-        'edit',
-        prInfo.headRefName,
-        '--base',
-        request.base,
-      ]);
+    if (request.action === 'update' && existing?.state !== 'OPEN') {
+      throw new ExitFailedError(
+        `PR #${request.prNumber} is no longer open. Run gt sync before submitting.`
+      );
     }
-
-    return {
-      head: prInfo.headRefName,
-      status: 'updated',
-      prNumber: prInfo.number,
-      prURL: prInfo.url,
-    };
-  } catch (error) {
-    if (
-      error instanceof Error &&
-      error.message.includes('no pull requests found')
-    ) {
-      const result = execFileSync('gh', [
-        'pr',
-        'create',
-        '--head',
-        request.head,
-        '--base',
-        request.base,
-        '--title',
-        request.title ?? '',
-        '--body',
-        request.body ?? '',
-        ...(request.draft ? ['--draft'] : []),
-      ])
-        .toString()
-        .trim();
-
-      const prNumber = getPrNumberFromUrl(result);
-
-      return {
-        head: request.head,
-        status: 'created',
-        prNumber,
-        prURL: result,
-      };
+    const updating = existing?.state === 'OPEN';
+    if (updating) {
+      const edits = [
+        ...(existing.baseRefName !== request.base
+          ? ['--base', request.base]
+          : []),
+        ...(request.title !== undefined && request.title !== existing.title
+          ? ['--title', request.title]
+          : []),
+        ...(request.body !== undefined && request.body !== existing.body
+          ? ['--body-file', '-']
+          : []),
+        ...(request.reviewers.length
+          ? ['--add-reviewer', request.reviewers.join(',')]
+          : []),
+      ];
+      if (edits.length)
+        client.pr(['edit', String(existing.number), ...edits], request.body);
+      if (request.draft !== undefined && request.draft !== existing.isDraft) {
+        client.pr([
+          'ready',
+          String(existing.number),
+          ...(request.draft ? ['--undo'] : []),
+        ]);
+      }
+    } else {
+      client.pr(
+        [
+          'create',
+          '--head',
+          request.head,
+          '--base',
+          request.base,
+          '--title',
+          request.title || request.head,
+          '--body-file',
+          '-',
+          ...(request.draft ? ['--draft'] : []),
+          ...(request.reviewers.length
+            ? ['--reviewer', request.reviewers.join(',')]
+            : []),
+        ],
+        request.body || ''
+      );
     }
-
-    throw error;
+    const pr = client.viewPR(updating ? existing.number : request.head);
+    if (!pr || pr.state !== 'OPEN')
+      throw new ExitFailedError(
+        `Unable to verify the submitted PR for ${request.head}. Retry gt submit.`
+      );
+    context.engine.upsertPrInfo(request.head, {
+      id: pr.id,
+      number: pr.number,
+      url: pr.url,
+      base: pr.baseRefName,
+      state: pr.state,
+      title: pr.title,
+      body: pr.body,
+      isDraft: pr.isDraft,
+      reviewDecision: pr.reviewDecision || undefined,
+    });
+    context.engine.recordPublishedVersion(request.head, {
+      headSha: request.headSha,
+      baseSha: request.baseSha,
+      baseName: request.base,
+    });
+    context.splog.info(
+      `${chalk.green(request.head)}: ${pr.url} (${
+        updating ? 'updated' : 'created'
+      })`
+    );
   }
-}
-
-function getPrNumberFromUrl(url: string): number {
-  const prNumber = url.match(/\/pull\/(\d+)$/)?.[1];
-
-  if (!prNumber) {
-    throw Error(`Could not find PR number in response: ${url}`);
-  }
-
-  return Number(prNumber);
 }

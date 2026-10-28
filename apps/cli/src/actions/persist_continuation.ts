@@ -39,4 +39,5 @@ export function clearContinuation(context: TContext): void {
     data.currentBranchOverride = undefined;
     data.rebasedBranchBase = undefined;
   });
+  context.continueConfig.delete();
 }

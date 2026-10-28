@@ -29,7 +29,9 @@ for (const scene of allScenes) {
       // can't navigate to an untracked branch
       scene.repo.checkoutBranch('a');
       expectCommits(scene.repo, 'a, 1');
-      scene.repo.runCliCommand([`branch`, `up`]);
+      expect(() => {
+        scene.repo.runCliCommand([`branch`, `up`]);
+      }).to.throw('Already at the top of the stack.');
       expectCommits(scene.repo, 'a, 1');
     });
 

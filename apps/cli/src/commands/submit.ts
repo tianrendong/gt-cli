@@ -4,6 +4,8 @@ import { SCOPE } from '../lib/engine/scope_spec';
 import { ExitFailedError } from '../lib/errors';
 import { graphite } from '../lib/runner';
 import { args as sharedArgs } from './shared-commands/submit';
+import { restackBranches } from '../actions/restack';
+import { TContext } from '../lib/context';
 
 const args = {
   ...sharedArgs,
@@ -15,9 +17,8 @@ const args = {
   },
   stack: {
     describe:
-      'Submit descendants of the current branch in addition to its ancestors.',
+      'Submit descendants of the current branch in addition to its ancestors. Pass --no-stack to submit narrowly and skip the prompt to include upstack branches with open PRs.',
     type: 'boolean',
-    default: false,
     alias: 's',
   },
   ai: {
@@ -45,33 +46,34 @@ const args = {
     alias: 'w',
   },
   'edit-title': {
-    describe: 'Use --edit in this CLI.',
+    describe:
+      'Input the PR title interactively for every submitted PR. Default only prompts for new PRs.',
     type: 'boolean',
-    default: false,
   },
   'edit-description': {
-    describe: 'Use --edit in this CLI.',
+    describe:
+      'Input the PR description interactively for every submitted PR. Default only prompts for new PRs.',
     type: 'boolean',
-    default: false,
   },
   'no-edit-title': {
-    describe: 'Use --no-edit in this CLI.',
+    describe:
+      "Don't prompt for the PR title. Takes precedence over --edit-title and --edit.",
     type: 'boolean',
     default: false,
   },
   'no-edit-description': {
-    describe: 'Use --no-edit in this CLI.',
+    describe:
+      "Don't prompt for the PR description. Takes precedence over --edit-description and --edit.",
     type: 'boolean',
     default: false,
   },
   comment: {
-    describe:
-      'Adding submit comments is not supported by this GitHub-only CLI.',
+    describe: 'Add a comment to each submitted pull request.',
     type: 'string',
   },
   'merge-when-ready': {
     describe:
-      'Graphite merge-when-ready is not supported by this GitHub-only CLI.',
+      'Enable GitHub auto-merge using squash, subject to repository rules.',
     type: 'boolean',
     default: false,
     alias: 'm',
@@ -82,25 +84,32 @@ const args = {
     alias: 't',
   },
   'rerequest-review': {
-    describe: 'Rerequesting reviews is not supported by this GitHub-only CLI.',
+    describe: 'Re-request reviews from previous GitHub reviewers.',
     type: 'boolean',
     default: false,
   },
   restack: {
     describe:
-      'Restack branches before submitting. This CLI already validates stack state.',
+      'Restack branches before submitting. If there are conflicts, output the branch names that could not be restacked.',
     type: 'boolean',
     default: false,
   },
   'target-trunk': {
     describe:
-      'Multiple target trunks are not supported by this GitHub-only CLI.',
+      'Which trunk to open PRs against on the remote. Never rebases or reparents local branches.',
     type: 'string',
   },
   'ignore-out-of-sync-trunk': {
-    describe: 'No-op compatibility flag.',
+    describe:
+      'Suppress the advisory warning when local trunk differs from its upstream branch.',
     type: 'boolean',
     default: false,
+  },
+  view: {
+    describe: 'Open the PR in your browser after submitting.',
+    type: 'boolean',
+    default: false,
+    alias: 'v',
   },
 } as const;
 
@@ -125,44 +134,97 @@ export const handler = async (argv: argsT): Promise<void> =>
         'This GitHub-only CLI does not support gt submit --web.'
       );
     }
-    if (argv.comment) {
-      throw new ExitFailedError(
-        'This GitHub-only CLI does not support gt submit --comment.'
-      );
-    }
-    if (argv['merge-when-ready']) {
-      throw new ExitFailedError(
-        'This GitHub-only CLI does not support Graphite merge-when-ready.'
-      );
-    }
-    if (argv['rerequest-review']) {
-      throw new ExitFailedError(
-        'This GitHub-only CLI does not support gt submit --rerequest-review.'
-      );
-    }
-    if (argv['target-trunk']) {
-      throw new ExitFailedError(
-        'This GitHub-only CLI does not support gt submit --target-trunk.'
+    const includeUpstack =
+      argv.stack ??
+      (await shouldIncludeUpstack(
+        argv.branch,
+        !argv['dry-run'] && !argv.select,
+        context
+      ));
+    if (argv.restack && !argv['dry-run']) {
+      restackBranches(
+        context.engine.getRelativeStack(
+          argv.branch ?? context.engine.currentBranchPrecondition,
+          includeUpstack ? SCOPE.STACK : SCOPE.DOWNSTACK
+        ),
+        context
       );
     }
 
     await submitAction(
       {
-        scope: argv.stack ? SCOPE.STACK : SCOPE.DOWNSTACK,
-        editPRFieldsInline:
-          !argv['no-edit'] &&
-          (argv.edit || argv['edit-title'] || argv['edit-description']),
+        scope: includeUpstack ? SCOPE.STACK : SCOPE.DOWNSTACK,
+        editPRFieldsInline: undefined,
+        editTitle: editMode(argv['no-edit-title'], argv['edit-title'], argv),
+        editBody: editMode(
+          argv['no-edit-description'],
+          argv['edit-description'],
+          argv
+        ),
         draft: argv.draft,
         publish: argv.publish,
         dryRun: argv['dry-run'],
         updateOnly: argv['update-only'],
-        reviewers: argv.reviewers ?? argv['team-reviewers'],
+        reviewers:
+          [argv.reviewers, argv['team-reviewers']]
+            .filter((s) => s !== undefined)
+            .join(',') || undefined,
         confirm: argv.confirm,
         forcePush: argv.force,
         select: argv.select,
         always: argv.always,
         branch: argv.branch,
+        stackSync: argv['stack-sync'],
+        preferLocal: argv.reconcile === 'local',
+        comment: argv.comment,
+        mergeWhenReady: argv['merge-when-ready'],
+        rerequestReview: argv['rerequest-review'],
+        targetTrunk: argv['target-trunk'],
+        view: argv.view,
+        ignoreOutOfSyncTrunk: argv['ignore-out-of-sync-trunk'],
       },
       context
     );
   });
+
+function editMode(
+  noEditField: boolean,
+  editField: boolean | undefined,
+  argv: { edit?: boolean; 'no-edit': boolean }
+): 'all' | 'new' | 'none' {
+  if (noEditField || editField === false) return 'none';
+  if (editField) return 'all';
+  if (argv['no-edit']) return 'none';
+  if (argv.edit) return 'all';
+  return 'new';
+}
+
+/** Like gt: by default, interactively offer to include branches above the
+ * current one that already have open PRs. --stack/--no-stack skip the prompt.
+ */
+async function shouldIncludeUpstack(
+  branch: string | undefined,
+  allowPrompt: boolean,
+  context: TContext
+): Promise<boolean> {
+  if (!context.interactive || !allowPrompt) return false;
+  const upstack = context.engine
+    .getRelativeStack(
+      branch ?? context.engine.currentBranchPrecondition,
+      SCOPE.UPSTACK_EXCLUSIVE
+    )
+    .filter(
+      (branchName) => context.engine.getPrInfo(branchName)?.state === 'OPEN'
+    );
+  if (!upstack.length) return false;
+  return (
+    await context.prompts({
+      type: 'confirm',
+      name: 'value',
+      message: `Include ${
+        upstack.length
+      } upstack branch(es) with open PRs (${upstack.join(', ')})?`,
+      initial: true,
+    })
+  ).value;
+}

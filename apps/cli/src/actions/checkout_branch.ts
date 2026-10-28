@@ -7,9 +7,13 @@ export async function checkoutBranch(
   {
     branchName,
     showUntracked,
+    stack,
+    all,
   }: {
     branchName: string | undefined;
     showUntracked?: boolean;
+    stack?: boolean;
+    all?: boolean;
   },
   context: TContext
 ): Promise<void> {
@@ -18,6 +22,10 @@ export async function checkoutBranch(
       {
         message: 'Checkout a branch (autocomplete or arrow keys)',
         showUntracked,
+        all,
+        branchName: stack
+          ? context.engine.currentBranchPrecondition
+          : undefined,
       },
       context
     );
@@ -37,11 +45,14 @@ function printBranchInfo(branchName: string, context: TContext) {
     !context.engine.isBranchTracked(branchName)
   ) {
     context.splog.info(`This branch is not tracked by Graphite.`);
+  } else if (context.engine.getPrInfo(branchName)?.state === 'MERGED') {
+    context.splog.info('This branch has been merged.');
+    context.splog.info(`Run ${chalk.cyan('gt sync')} to clean it up.`);
   } else if (!context.engine.isBranchFixed(branchName)) {
     context.splog.info(
       `This branch has fallen behind ${chalk.blueBright(
         context.engine.getParentPrecondition(branchName)
-      )} - you may want to ${chalk.cyan(`gt upstack restack`)}.`
+      )}.\nRun ${chalk.cyan('gt restack')} to resolve.`
     );
   } else {
     const nearestAncestorNeedingRestack = context.engine
@@ -55,8 +66,20 @@ function printBranchInfo(branchName: string, context: TContext) {
           nearestAncestorNeedingRestack
         )} has fallen behind ${chalk.blueBright(
           context.engine.getParentPrecondition(nearestAncestorNeedingRestack)
-        )} - you may want to ${chalk.cyan(`gt stack restack`)}.`
+        )}.\nRun ${chalk.cyan('gt restack')} to resolve.`
       );
+    } else if (!context.engine.isTrunk(branchName)) {
+      const published = context.engine.getPublishedRevision(branchName);
+      if (published !== context.engine.getRevision(branchName)) {
+        context.splog.info(
+          published
+            ? 'This branch has local changes that need to be submitted.'
+            : 'This branch has not yet been submitted.'
+        );
+        context.splog.info(
+          `Run ${chalk.cyan('gt submit')} to push your changes.`
+        );
+      }
     }
   }
 }

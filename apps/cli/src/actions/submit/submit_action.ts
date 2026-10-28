@@ -11,7 +11,17 @@ import {
   footerFooter,
   footerTitle,
 } from '../create_pr_body_footer';
-import { execFileSync } from 'child_process';
+import { GitHubClient } from '../../lib/github/client';
+import { cleanupGitHubStacks } from '../../lib/github/stack_cleanup';
+import {
+  preflightStackSync,
+  prepareRemoteStacks,
+  syncSubmittedStacks,
+} from '../../lib/github/stack_sync';
+import { submitExtras } from './submit_extras';
+import { prepareGraphiteSubmission } from '../../lib/graphite_cloud/submit';
+
+export type TSubmitEditMode = 'all' | 'new' | 'none';
 
 // eslint-disable-next-line max-lines-per-function
 export async function submitAction(
@@ -28,16 +38,59 @@ export async function submitAction(
     select: boolean;
     always: boolean;
     branch: string | undefined;
+    stackSync?: boolean;
+    preferLocal?: boolean;
+    comment?: string;
+    mergeWhenReady?: boolean;
+    rerequestReview?: boolean;
+    editTitle?: TSubmitEditMode;
+    editBody?: TSubmitEditMode;
+    targetTrunk?: string;
+    view?: boolean;
+    ignoreOutOfSyncTrunk?: boolean;
   },
   context: TContext
 ): Promise<void> {
+  if (!context.repoConfig.getIsGithubIntegrationEnabled()) {
+    throw new ExitFailedError(
+      'GitHub integration is disabled. Enable it with gt repo github --enable before submitting PRs, or use git push for Git-only publishing.'
+    );
+  }
   // Check CLI pre-condition to warn early
   if (args.draft && args.publish) {
     throw new ExitFailedError(
       `Can't use both --publish and --draft flags in one command`
     );
   }
-  const populateRemoteShasPromise = context.engine.populateRemoteShas();
+  await context.engine.populateRemoteShas();
+  // Busy repositories advance trunk between sync and submit. Like Graphite,
+  // warn without blocking publication; per-branch push leases protect others' work.
+  const remoteTrunkSha = context.engine.getRemoteSha(context.engine.trunk);
+  if (
+    remoteTrunkSha &&
+    remoteTrunkSha !== context.engine.getRevision(context.engine.trunk) &&
+    !args.ignoreOutOfSyncTrunk
+  ) {
+    context.splog.warn(
+      `${context.engine.trunk} is out of sync with its remote. PRs still target the remote branch; run gt sync when you want to update your local base.`
+    );
+  }
+  const editModes = {
+    title:
+      args.editTitle ??
+      (args.editPRFieldsInline === undefined
+        ? 'new'
+        : args.editPRFieldsInline
+        ? 'all'
+        : 'none'),
+    body:
+      args.editBody ??
+      (args.editPRFieldsInline === undefined
+        ? 'new'
+        : args.editPRFieldsInline
+        ? 'all'
+        : 'none'),
+  };
   if (args.dryRun) {
     context.splog.info(
       chalk.yellow(
@@ -45,12 +98,13 @@ export async function submitAction(
       )
     );
     context.splog.newline();
-    args.editPRFieldsInline = false;
+    editModes.title = 'none';
+    editModes.body = 'none';
   }
 
   if (!context.interactive) {
-    args.editPRFieldsInline = false;
-    args.reviewers = undefined;
+    editModes.title = 'none';
+    editModes.body = 'none';
 
     context.splog.info(
       `Running in non-interactive mode. Inline prompts to fill PR fields will be skipped${
@@ -63,12 +117,16 @@ export async function submitAction(
   }
 
   const allBranchNames = context.engine
-    .getRelativeStack(context.engine.currentBranchPrecondition, args.scope)
+    .getRelativeStack(
+      args.branch ?? context.engine.currentBranchPrecondition,
+      args.scope
+    )
     .filter((branchName) => !context.engine.isTrunk(branchName));
 
-  const branchNames = args.select
-    ? await selectBranches(context, allBranchNames)
-    : allBranchNames;
+  const branchNames =
+    args.select && context.interactive && !args.dryRun
+      ? await selectBranches(context, allBranchNames)
+      : allBranchNames;
 
   context.splog.info(
     chalk.blueBright(
@@ -77,17 +135,30 @@ export async function submitAction(
   );
   context.splog.newline();
   await validateBranchesToSubmit(branchNames, context);
+  const stackSync =
+    args.stackSync !== false &&
+    context.repoConfig.getIsGithubIntegrationEnabled();
+  const stackPlans = stackSync
+    ? await preflightStackSync(context, branchNames, args.preferLocal)
+    : [];
+  const graphiteSubmission = prepareGraphiteSubmission(context, {
+    branches: branchNames,
+    dryRun: args.dryRun,
+    always: args.always,
+    targetTrunk: args.targetTrunk,
+    stackSync,
+  });
 
   context.splog.info(
     chalk.blueBright(
       '✏️  Preparing to submit PRs for the following branches...'
     )
   );
-  await populateRemoteShasPromise;
   const submissionInfos = await getPRInfoForBranches(
     {
       branchNames: branchNames,
-      editPRFieldsInline: args.editPRFieldsInline && context.interactive,
+      editTitle: editModes.title,
+      editBody: editModes.body,
       draft: args.draft,
       publish: args.publish,
       updateOnly: args.updateOnly,
@@ -95,6 +166,7 @@ export async function submitAction(
       dryRun: args.dryRun,
       select: args.select,
       always: args.always,
+      targetTrunk: args.targetTrunk,
     },
     context
   );
@@ -108,6 +180,14 @@ export async function submitAction(
     return;
   }
 
+  if (stackSync) {
+    prepareRemoteStacks(stackPlans, context);
+    await cleanupGitHubStacks(context, {
+      branches: new Set(
+        stackPlans.flatMap((p) => p.local.branches.map((b) => b.branch))
+      ),
+    });
+  }
   context.splog.info(
     chalk.blueBright('📨 Pushing to remote and creating/updating PRs...')
   );
@@ -136,6 +216,26 @@ export async function submitAction(
     await submitPullRequest([submissionInfo], context);
   }
 
+  if (stackSync) {
+    const mirroredBranches = [
+      ...new Set([
+        ...branchNames,
+        ...stackPlans.flatMap((plan) =>
+          plan.local.branches.map((b) => b.branch)
+        ),
+      ]),
+    ];
+    await syncSubmittedStacks(context, mirroredBranches);
+  }
+  await submitExtras(args, branchNames, context);
+
+  if (stackSync) {
+    removeStaleDependencyTrees(branchNames, context);
+    await graphiteSubmission?.sync(branchNames);
+    openSubmittedPR(args, context);
+    return;
+  }
+  const client = GitHubClient.fromConfig(context.repoConfig);
   context.splog.info(
     chalk.blueBright('\n🌳 Updating dependency trees in PR bodies...')
   );
@@ -144,63 +244,103 @@ export async function submitAction(
     const prInfo = context.engine.getPrInfo(branch);
     const footer = createPrBodyFooter(context, branch);
 
-    if (!prInfo) {
-      throw new Error(`PR info is undefined for branch ${branch}`);
-    }
+    if (!prInfo?.number || prInfo.state !== 'OPEN') continue;
 
-    const prFooterChanged = !prInfo.body?.includes(footer);
-
-    if (prFooterChanged) {
-      execFileSync('gh', [
-        'pr',
-        'edit',
-        `${prInfo.number}`,
-        '--body',
-        updatePrBodyFooter(prInfo.body, footer),
-      ]);
-
+    const body = updatePrBodyFooter(prInfo.body, footer);
+    if (body !== (prInfo.body ?? '')) {
+      client.pr(['edit', `${prInfo.number}`, '--body-file', '-'], body);
+      context.engine.upsertPrInfo(branch, { body });
       context.splog.info(
-        `${chalk.green(branch)}: ${prInfo.url} (${
-          prFooterChanged ? chalk.yellow('Updated') : 'No-op'
-        })`
+        `${chalk.green(branch)}: ${prInfo.url} (${chalk.yellow('Updated')})`
       );
     }
   }
 
-  if (!context.interactive) {
-    return;
-  }
+  await graphiteSubmission?.sync(branchNames);
+  openSubmittedPR(args, context);
+}
+
+const escapeRegExp = (text: string): string =>
+  text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+const treeTitle = escapeRegExp(footerTitle.trim());
+const treeEnd = escapeRegExp(footerFooter.trim());
+// One generated tree: its title through its closing line. The tempered token
+// stops a match from spanning a second title, so a stray heading in the
+// author's text cannot swallow everything up to a later tree.
+const generatedTree = new RegExp(
+  `${treeTitle}(?:(?!${treeTitle})[\\s\\S])*?${treeEnd}`,
+  'g'
+);
+
+export function hasPrBodyTree(body: string | undefined): boolean {
+  return !!body && new RegExp(generatedTree.source).test(body);
+}
+
+/** Remove every gt-generated dependency tree, wherever it sits. Editors and
+ * agents often leave trailing whitespace (or text) after the tree, and older
+ * versions then appended a second tree instead of replacing the first. */
+export function removePrBodyTrees(body: string): string {
+  return body
+    .split(generatedTree)
+    .map((part, index) =>
+      (index ? part.replace(/^\s+/, '') : part).replace(/\s+$/, '')
+    )
+    .filter(Boolean)
+    .join('\n\n');
 }
 
 export function updatePrBodyFooter(
   body: string | undefined,
   footer: string
 ): string {
-  if (!body) {
-    return footer;
+  const remaining = body ? removePrBodyTrees(body) : '';
+  return remaining ? remaining + footer : footer;
+}
+
+/** GitHub Stacks replace the legacy dependency tree. A tree left from a
+ * --no-stack-sync submit is never refreshed again, so it goes stale; remove it
+ * (and any duplicates) once. Bodies without a tree cost nothing. */
+function removeStaleDependencyTrees(
+  branchNames: string[],
+  context: TContext
+): void {
+  const client = GitHubClient.fromConfig(context.repoConfig);
+  for (const branch of branchNames) {
+    const prInfo = context.engine.getPrInfo(branch);
+    if (
+      !prInfo?.number ||
+      prInfo.state !== 'OPEN' ||
+      !hasPrBodyTree(prInfo.body)
+    )
+      continue;
+    const body = removePrBodyTrees(prInfo.body ?? '');
+    client.pr(['edit', `${prInfo.number}`, '--body-file', '-'], body);
+    context.engine.upsertPrInfo(branch, { body });
+    context.splog.info(
+      `${chalk.green(branch)}: ${
+        prInfo.url
+      } (removed the legacy dependency tree; GitHub stacks replace it)`
+    );
   }
+}
 
-  // Get the core title and footer text without extra whitespace
-  const titleText = footerTitle.trim().replace(/^\s*\n+|\n+\s*$/g, '');
-  const footerText = footerFooter.trim().replace(/^\s*\n+|\n+\s*$/g, '');
-
-  const escapedTitleText = titleText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const escapedFooterText = footerText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
-  // Match a pattern where there's the main body content, followed by the footer section
-  // The footer section starts with the title text and ends with the footer text
-  const matchExistingFooter = new RegExp(
-    `(?<body>[\\s\\S]*)(?<footer>${escapedTitleText}[\\s\\S]*?${escapedFooterText})$`,
-    's'
-  );
-
-  const match = matchExistingFooter.exec(body);
-
-  if (match?.groups?.body) {
-    return match.groups.body + footer;
+function openSubmittedPR(
+  args: { view?: boolean; branch: string | undefined },
+  context: TContext
+): void {
+  if (!args.view) return;
+  const branchName = args.branch ?? context.engine.currentBranchPrecondition;
+  const prInfo = context.engine.getPrInfo(branchName);
+  if (!prInfo?.number) return;
+  if (context.interactive) {
+    GitHubClient.fromConfig(context.repoConfig).pr([
+      'view',
+      String(prInfo.number),
+      '--web',
+    ]);
+  } else if (prInfo.url) {
+    context.splog.info(prInfo.url);
   }
-
-  return body + footer;
 }
 
 async function selectBranches(
@@ -237,8 +377,9 @@ async function shouldAbort(
   }
 
   if (!args.hasAnyPrs) {
-    context.splog.info(chalk.blueBright('🆗 All PRs up to date.'));
-    return true;
+    context.splog.info(
+      chalk.blueBright('🆗 All PRs up to date. Checking GitHub stack metadata.')
+    );
   }
 
   if (

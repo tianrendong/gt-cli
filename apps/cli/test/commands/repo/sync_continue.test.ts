@@ -24,7 +24,7 @@ for (const scene of allScenes) {
       ]);
     });
 
-    it('Can continue a repo sync with one merge conflict', async () => {
+    it('Defers a sync conflict until an explicit restack', async () => {
       scene.repo.checkoutBranch('main');
       scene.repo.createChange('a', 'file_with_no_merge_conflict_a');
       scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
@@ -53,15 +53,18 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, 'd', 'squash');
       fakeGitSquashAndMerge(scene.repo, 'e', 'squash');
 
-      expect(() =>
-        scene.repo.runCliCommand([
-          `repo`,
-          `sync`,
-          `-f`,
-          `--no-pull`,
-          `--restack`,
-        ])
-      ).to.throw();
+      scene.repo.runCliCommand([
+        `repo`,
+        `sync`,
+        `-f`,
+        `--no-pull`,
+        `--restack`,
+      ]);
+      expect(scene.repo.rebaseInProgress()).to.be.false;
+      expectBranches(scene.repo, 'c, main');
+
+      scene.repo.checkoutBranch('c');
+      expect(() => scene.repo.runCliCommand(['restack'])).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();
@@ -71,7 +74,7 @@ for (const scene of allScenes) {
       expectBranches(scene.repo, 'c, main');
     });
 
-    it('Can continue a repo sync with multiple merge conflicts', () => {
+    it('Can continue multiple conflicts after explicitly restacking a deferred stack', () => {
       scene.repo.checkoutBranch('main');
       scene.repo.createChange('a', 'file_with_no_merge_conflict_a');
       scene.repo.runCliCommand([`branch`, `create`, `a`, `-m`, `a`]);
@@ -101,15 +104,18 @@ for (const scene of allScenes) {
       fakeGitSquashAndMerge(scene.repo, 'e', 'squash');
       fakeGitSquashAndMerge(scene.repo, 'f', 'squash');
 
-      expect(() =>
-        scene.repo.runCliCommand([
-          `repo`,
-          `sync`,
-          `-f`,
-          `--no-pull`,
-          `--restack`,
-        ])
-      ).to.throw();
+      scene.repo.runCliCommand([
+        `repo`,
+        `sync`,
+        `-f`,
+        `--no-pull`,
+        `--restack`,
+      ]);
+      expect(scene.repo.rebaseInProgress()).to.be.false;
+      expectBranches(scene.repo, 'c, d, main');
+
+      scene.repo.checkoutBranch('c');
+      expect(() => scene.repo.runCliCommand(['restack'])).to.throw();
       expect(scene.repo.rebaseInProgress()).to.be.true;
 
       scene.repo.resolveMergeConflicts();

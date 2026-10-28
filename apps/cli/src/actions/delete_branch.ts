@@ -28,8 +28,13 @@ export function deleteBranchAction(
     args.branchName,
     SCOPE.UPSTACK_EXCLUSIVE
   );
+  const previousRevision = context.engine.getRevision(args.branchName);
   context.engine.deleteBranch(args.branchName);
-  context.splog.info(`Deleted branch ${chalk.red(args.branchName)}`);
+  context.splog.info(
+    `Deleted branch ${chalk.red(
+      args.branchName
+    )} (previously at ${previousRevision})`
+  );
 
   restackBranches(branchesToRestack, context);
 }
@@ -41,7 +46,12 @@ export function deleteBranchAction(
 // case where one feature branch is merged into another on GitHub.
 export function isSafeToDelete(
   branchName: string,
-  context: TContext
+  context: TContext,
+  opts: {
+    /** The PR state was just refreshed from GitHub: an open PR means the
+     * branch is not merged, so skip the history scan that confirms it. */
+    trustOpenPRs?: boolean;
+  } = {}
 ): { result: true; reason: string } | { result: false } {
   const prInfo = context.engine.getPrInfo(branchName);
 
@@ -52,6 +62,8 @@ export function isSafeToDelete(
       ? `${chalk.green(branchName)} is merged into ${chalk.cyan(
           prInfo?.base ?? context.engine.trunk
         )}`
+      : opts.trustOpenPRs && prInfo?.state === 'OPEN' && prInfo.number
+      ? undefined
       : context.engine.isMergedIntoTrunk(branchName)
       ? `${chalk.green(branchName)} is merged into ${chalk.cyan(
           context.engine.trunk

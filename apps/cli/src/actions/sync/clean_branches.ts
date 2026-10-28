@@ -15,6 +15,13 @@ export async function cleanBranches(
   opts: {
     showDeleteProgress: boolean;
     force: boolean;
+    /** Branch -> why it cannot be deleted from this worktree, as a clause
+     * completing "cannot be cleaned up while <reason>". */
+    protectedBranches?: ReadonlyMap<string, string>;
+    /** Show a section only when cleanup finds candidates. */
+    showSection?: boolean;
+    /** PR states are fresh: skip history scans for branches with open PRs. */
+    trustOpenPRs?: boolean;
   },
   context: TContext
 ): Promise<string[]> {
@@ -49,6 +56,12 @@ export async function cleanBranches(
   const progressMarkers = opts.showDeleteProgress
     ? getProgressMarkers(branchesToProcess)
     : {};
+  let cleanupStarted = false;
+  const onDeleteCandidate = () => {
+    if (cleanupStarted || !opts.showSection) return;
+    cleanupStarted = true;
+    context.splog.info('🧹 Cleaning up branches with merged/closed PRs...');
+  };
 
   while (branchesToProcess.length > 0) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -65,13 +78,35 @@ export async function cleanBranches(
     }
 
     context.splog.debug(`Checking if should delete ${branchName}...`);
-    const shouldDelete = await shouldDeleteBranch(
-      {
-        branchName: branchName,
-        force: opts.force,
-      },
-      context
-    );
+    // Some branches cannot be deleted from this worktree (checked out or
+    // being worked on elsewhere). Say so instead of prompting; keep them.
+    const protectedReason = opts.protectedBranches?.get(branchName);
+    if (protectedReason) {
+      const safe = isSafeToDelete(branchName, context, {
+        trustOpenPRs: opts.trustOpenPRs,
+      });
+      if (safe.result) {
+        onDeleteCandidate();
+        context.splog.warn(
+          `${protectedSubject(
+            branchName,
+            safe.reason,
+            context
+          )} but cannot be cleaned up while ${protectedReason}.`
+        );
+      }
+    }
+    const shouldDelete =
+      !protectedReason &&
+      (await shouldDeleteBranch(
+        {
+          branchName: branchName,
+          force: opts.force,
+          trustOpenPRs: opts.trustOpenPRs,
+          onDeleteCandidate,
+        },
+        context
+      ));
     if (shouldDelete) {
       const children = context.engine.getChildren(branchName);
 
@@ -117,6 +152,7 @@ export async function cleanBranches(
 
     greedilyDeleteUnblockedBranches(branchesToDelete, context);
   }
+  if (cleanupStarted) context.splog.newline();
   return branchesWithNewParents;
 }
 
@@ -172,14 +208,33 @@ function getProgressMarkers(trunkChildren: string[]): Record<string, string> {
   return progressMarkers;
 }
 
+/** Native wording: "PR #N for X is merged" when a PR settled the branch,
+ * otherwise what the local history shows. */
+function protectedSubject(
+  branchName: string,
+  reason: string,
+  context: TContext
+): string {
+  const pr = context.engine.getPrInfo(branchName);
+  if (pr?.number && pr.state === 'MERGED')
+    return `PR #${pr.number} for ${chalk.cyan(branchName)} is merged`;
+  if (pr?.number && pr.state === 'CLOSED')
+    return `PR #${pr.number} for ${chalk.cyan(branchName)} is closed`;
+  return reason;
+}
+
 async function shouldDeleteBranch(
   args: {
     branchName: string;
     force: boolean;
+    trustOpenPRs?: boolean;
+    onDeleteCandidate: () => void;
   },
   context: TContext
 ): Promise<boolean> {
-  const shouldDelete = isSafeToDelete(args.branchName, context);
+  const shouldDelete = isSafeToDelete(args.branchName, context, {
+    trustOpenPRs: args.trustOpenPRs,
+  });
   if (!shouldDelete.result) {
     return false;
   }
@@ -191,6 +246,8 @@ async function shouldDeleteBranch(
   ) {
     return false;
   }
+
+  args.onDeleteCandidate();
 
   if (args.force) {
     return true;

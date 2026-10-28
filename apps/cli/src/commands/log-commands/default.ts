@@ -28,6 +28,13 @@ const args = {
     positional: false,
     alias: 'u',
   },
+  all: {
+    describe: `Show branches across all configured trunks.`,
+    demandOption: false,
+    type: 'boolean',
+    alias: 'a',
+    default: false,
+  },
 } as const;
 
 export const command = '*';
@@ -49,6 +56,7 @@ export const handler = async (argv: argsT): Promise<void> =>
             : context.engine.trunk,
         steps: argv.steps,
         showUntracked: argv['show-untracked'],
+        allTrunks: argv.all && !argv.stack && !argv.steps,
       },
       context
     )

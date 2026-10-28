@@ -11,6 +11,9 @@ export function isMerged({
   trunkName: string;
 }): boolean {
   const mergeBase = getMergeBase(branchName, trunkName);
+  // Squash-merge detection replays the branch from its base; a branch that
+  // shares no history with trunk has no base to replay from.
+  if (!mergeBase) return false;
   const branchCommits = getCommitRange(trunkName, branchName, 'SHA').reverse();
 
   // note - we copied this code from the server

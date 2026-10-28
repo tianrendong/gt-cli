@@ -8,6 +8,20 @@
     ]
   },
   "packageManager": "yarn@3.2.1",
+  "scripts": {
+    "build": "node .yarn/releases/yarn-3.2.1.cjs workspace @tianrendong/gt-cli build",
+    "check": "node .yarn/releases/yarn-3.2.1.cjs workspace @tianrendong/gt-cli check",
+    "lint": "node .yarn/releases/yarn-3.2.1.cjs workspace @tianrendong/gt-cli lint",
+    "test": "node .yarn/releases/yarn-3.2.1.cjs workspace @tianrendong/gt-cli test",
+    "test:parity": "node apps/cli/scripts/parity/local_repository.cjs",
+    "test:output": "node apps/cli/scripts/parity/output.cjs",
+    "test:pi": "node apps/cli/scripts/parity/pi_stack.cjs",
+    "test:graphite": "node apps/cli/scripts/parity/pi_stack.cjs --graphite-cloud",
+    "test:install": "node apps/cli/scripts/parity/installation.cjs",
+    "test:update": "node apps/cli/scripts/parity/installation.cjs --update-tests",
+    "migrate:graphite": "node apps/cli/scripts/migrate-from-graphite.cjs",
+    "gt": "node apps/cli/dist/src/gt_cli.js"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.47.0",
     "@typescript-eslint/parser": "^5.47.0",

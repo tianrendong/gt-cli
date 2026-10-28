@@ -1,0 +1,1902 @@
+{
+  "nativeVersion": "1.8.6",
+  "cases": [
+    {
+      "id": "init",
+      "args": [
+        "init",
+        "--trunk",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Welcome to Graphite!\n\nTrunk set to \u001b[32mmain\u001b[39m\n\n",
+      "stderr": ""
+    },
+    {
+      "id": "trunk.info",
+      "args": [
+        "info"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mmain\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\n\u001b[33mcommit c186ad0fb7c58c5129ba46ebd09541695282b941\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    Base 1\n",
+      "stderr": ""
+    },
+    {
+      "id": "trunk.restack",
+      "args": [
+        "restack"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "trunk.children",
+      "args": [
+        "children"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "trunk.parent",
+      "args": [
+        "parent"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot perform this operation on the trunk branch. \u001b[39m\n"
+    },
+    {
+      "id": "trunk.down",
+      "args": [
+        "down"
+      ],
+      "status": 1,
+      "stdout": "\u001b[94mmain\u001b[39m\n",
+      "stderr": "\u001b[91mERROR: Already at the bottom most branch in the stack. \u001b[39m\n"
+    },
+    {
+      "id": "passthrough.status",
+      "args": [
+        "status",
+        "--short"
+      ],
+      "status": 0,
+      "stdout": "\u001b[2mPassing command through to git...\u001b[22m\n\u001b[2mRunning: \"\u001b[33mgit status --short\u001b[39m\"\u001b[22m\n\u001b[2m\u001b[22m\n",
+      "stderr": ""
+    },
+    {
+      "id": "create.one",
+      "args": [
+        "create",
+        "one",
+        "-m",
+        "one commit"
+      ],
+      "status": 0,
+      "stdout": "1 file changed, 1 insertion(+)\n create mode 100644 one.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "create.two",
+      "args": [
+        "create",
+        "two",
+        "-m",
+        "two commit"
+      ],
+      "status": 0,
+      "stdout": "1 file changed, 1 insertion(+)\n create mode 100644 two.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "\u001b[36m◉\u001b[39m \u001b[36mtwo (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2md4f58ac - two commit\u001b[22m\n│\n◯ \u001b[94mone\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m934b663 - one commit\u001b[22m\n│\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "log.plain",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◉ two (current)\n│ <relative date>\n│ \n│ d4f58ac - two commit\n│\n◯ one\n│ <relative date>\n│ \n│ 934b663 - one commit\n│\n◯ main\n│ <relative date>\n│ \n│ c186ad0 - Base 1\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "log.auto",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◉ two (current)\n│ <relative date>\n│ \n│ d4f58ac - two commit\n│\n◯ one\n│ <relative date>\n│ \n│ 934b663 - one commit\n│\n◯ main\n│ <relative date>\n│ \n│ c186ad0 - Base 1\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "log.no-color",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◉ two (current)\n│ <relative date>\n│ \n│ d4f58ac - two commit\n│\n◯ one\n│ <relative date>\n│ \n│ 934b663 - one commit\n│\n◯ main\n│ <relative date>\n│ \n│ c186ad0 - Base 1\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "log.quiet",
+      "args": [
+        "log",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "ls",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◉\u001b[39m  \u001b[38;5;81mtwo\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mone\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "ls.plain",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "◉  two\n◯  one\n◯  main\n",
+      "stderr": ""
+    },
+    {
+      "id": "ls.auto",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "◉  two\n◯  one\n◯  main\n",
+      "stderr": ""
+    },
+    {
+      "id": "ls.no-color",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "◉  two\n◯  one\n◯  main\n",
+      "stderr": ""
+    },
+    {
+      "id": "ls.quiet",
+      "args": [
+        "ls",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "ll",
+      "args": [
+        "ll"
+      ],
+      "status": 0,
+      "stdout": "* d4f58ac - (<relative date>) two commit - Tester (HEAD -> two)\n* 934b663 - (<relative date>) one commit - Tester (one)\n* c186ad0 - (<relative date>) Base 1 - Tester (main)\n* 5297894 - (<relative date>) Base 0 - Tester",
+      "stderr": ""
+    },
+    {
+      "id": "ll.plain",
+      "args": [
+        "ll"
+      ],
+      "status": 0,
+      "stdout": "* d4f58ac - (<relative date>) two commit - Tester (HEAD -> two)\n* 934b663 - (<relative date>) one commit - Tester (one)\n* c186ad0 - (<relative date>) Base 1 - Tester (main)\n* 5297894 - (<relative date>) Base 0 - Tester",
+      "stderr": ""
+    },
+    {
+      "id": "ll.auto",
+      "args": [
+        "ll"
+      ],
+      "status": 0,
+      "stdout": "* d4f58ac - (<relative date>) two commit - Tester (HEAD -> two)\n* 934b663 - (<relative date>) one commit - Tester (one)\n* c186ad0 - (<relative date>) Base 1 - Tester (main)\n* 5297894 - (<relative date>) Base 0 - Tester",
+      "stderr": ""
+    },
+    {
+      "id": "ll.no-color",
+      "args": [
+        "ll"
+      ],
+      "status": 0,
+      "stdout": "* d4f58ac - (<relative date>) two commit - Tester (HEAD -> two)\n* 934b663 - (<relative date>) one commit - Tester (one)\n* c186ad0 - (<relative date>) Base 1 - Tester (main)\n* 5297894 - (<relative date>) Base 0 - Tester",
+      "stderr": ""
+    },
+    {
+      "id": "ll.quiet",
+      "args": [
+        "ll",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "* d4f58ac - (<relative date>) two commit - Tester (HEAD -> two)\n* 934b663 - (<relative date>) one commit - Tester (one)\n* c186ad0 - (<relative date>) Base 1 - Tester (main)\n* 5297894 - (<relative date>) Base 0 - Tester",
+      "stderr": ""
+    },
+    {
+      "id": "info",
+      "args": [
+        "info"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mtwo\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[36mParent\u001b[39m: one\n\n\u001b[33mcommit d4f58ac19802ce3247e359399024d2216cbbe158\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "info.plain",
+      "args": [
+        "info"
+      ],
+      "status": 0,
+      "stdout": "two\n<relative date>\n\nParent: one\n\n\u001b[33mcommit d4f58ac19802ce3247e359399024d2216cbbe158\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "info.auto",
+      "args": [
+        "info"
+      ],
+      "status": 0,
+      "stdout": "two\n<relative date>\n\nParent: one\n\n\u001b[33mcommit d4f58ac19802ce3247e359399024d2216cbbe158\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "info.no-color",
+      "args": [
+        "info"
+      ],
+      "status": 0,
+      "stdout": "two\n<relative date>\n\nParent: one\n\n\u001b[33mcommit d4f58ac19802ce3247e359399024d2216cbbe158\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "info.quiet",
+      "args": [
+        "info",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "parent",
+      "args": [
+        "parent"
+      ],
+      "status": 0,
+      "stdout": "one\n",
+      "stderr": ""
+    },
+    {
+      "id": "parent.plain",
+      "args": [
+        "parent"
+      ],
+      "status": 0,
+      "stdout": "one\n",
+      "stderr": ""
+    },
+    {
+      "id": "parent.auto",
+      "args": [
+        "parent"
+      ],
+      "status": 0,
+      "stdout": "one\n",
+      "stderr": ""
+    },
+    {
+      "id": "parent.no-color",
+      "args": [
+        "parent"
+      ],
+      "status": 0,
+      "stdout": "one\n",
+      "stderr": ""
+    },
+    {
+      "id": "parent.quiet",
+      "args": [
+        "parent",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "log.reverse",
+      "args": [
+        "log",
+        "--reverse"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n◯ \u001b[94mone\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m934b663 - one commit\u001b[22m\n│\n\u001b[36m◉\u001b[39m \u001b[36mtwo (current)\u001b[39m\n  \u001b[2m<relative date>\u001b[22m\n  \n  \u001b[2md4f58ac - two commit\u001b[22m\n \n",
+      "stderr": ""
+    },
+    {
+      "id": "ls.reverse",
+      "args": [
+        "ls",
+        "--reverse"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mone\u001b[39m\n\u001b[38;5;81m◉\u001b[39m  \u001b[38;5;81mtwo\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "log.stack",
+      "args": [
+        "log",
+        "--stack"
+      ],
+      "status": 0,
+      "stdout": "\u001b[36m◉\u001b[39m \u001b[36mtwo (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2md4f58ac - two commit\u001b[22m\n│\n◯ \u001b[94mone\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m934b663 - one commit\u001b[22m\n│\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "log.steps",
+      "args": [
+        "log",
+        "--steps",
+        "1"
+      ],
+      "status": 0,
+      "stdout": "\u001b[36m◉\u001b[39m \u001b[36mtwo (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2md4f58ac - two commit\u001b[22m\n│\n◯ \u001b[94mone\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m934b663 - one commit\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "info.parent",
+      "args": [
+        "info",
+        "one"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mone\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[36mParent\u001b[39m: main\n\u001b[36mChildren\u001b[39m:\n\n\u001b[33mcommit 934b663fa7a8af355d6969427be5f26b69300018\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    one commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "info.patch",
+      "args": [
+        "info",
+        "--patch"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mtwo\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[36mParent\u001b[39m: one\n\n\u001b[33mcommit d4f58ac19802ce3247e359399024d2216cbbe158\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit\n\n\u001b[1mdiff --git a/two.txt b/two.txt\u001b[m\n\u001b[1mnew file mode 100644\u001b[m\n\u001b[1mindex 0000000..f719efd\u001b[m\n\u001b[1m--- /dev/null\u001b[m\n\u001b[1m+++ b/two.txt\u001b[m\n\u001b[36m@@ -0,0 +1 @@\u001b[m\n\u001b[32m+\u001b[m\u001b[32mtwo\u001b[m\n",
+      "stderr": ""
+    },
+    {
+      "id": "info.diff",
+      "args": [
+        "info",
+        "--diff"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mtwo\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[36mParent\u001b[39m: one\n\n\u001b[33mcommit d4f58ac19802ce3247e359399024d2216cbbe158\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit\n\n\u001b[1mdiff --git a/two.txt b/two.txt\u001b[m\n\u001b[1mnew file mode 100644\u001b[m\n\u001b[1mindex 0000000..f719efd\u001b[m\n\u001b[1m--- /dev/null\u001b[m\n\u001b[1m+++ b/two.txt\u001b[m\n\u001b[36m@@ -0,0 +1 @@\u001b[m\n\u001b[32m+\u001b[m\u001b[32mtwo\u001b[m\n",
+      "stderr": ""
+    },
+    {
+      "id": "info.stat",
+      "args": [
+        "info",
+        "--stat"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mtwo\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[36mParent\u001b[39m: one\n\n\u001b[33mcommit d4f58ac19802ce3247e359399024d2216cbbe158\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit\n\ntwo.txt | 1 \u001b[32m+\u001b[m\n 1 file changed, 1 insertion(+)\n",
+      "stderr": ""
+    },
+    {
+      "id": "info.stat.patch",
+      "args": [
+        "info",
+        "--stat",
+        "--patch"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mtwo\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[36mParent\u001b[39m: one\n\n\u001b[33mcommit d4f58ac19802ce3247e359399024d2216cbbe158\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit\n\n two.txt | 1 \u001b[32m+\u001b[m\n 1 file changed, 1 insertion(+)\n",
+      "stderr": ""
+    },
+    {
+      "id": "info.stat.diff",
+      "args": [
+        "info",
+        "--stat",
+        "--diff"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mtwo\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[36mParent\u001b[39m: one\n\n\u001b[33mcommit d4f58ac19802ce3247e359399024d2216cbbe158\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit\n\ntwo.txt | 1 \u001b[32m+\u001b[m\n 1 file changed, 1 insertion(+)\n",
+      "stderr": ""
+    },
+    {
+      "id": "children.leaf",
+      "args": [
+        "children"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "pager.pipe",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◉\u001b[39m  \u001b[38;5;81mtwo\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mone\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "pager.interactive",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "PAGER_USED\n\u001b[38;5;81m◉\u001b[39m  \u001b[38;5;81mtwo\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mone\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mmain\u001b[39m",
+      "stderr": ""
+    },
+    {
+      "id": "pager.interactive.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "PAGER_USED\n\u001b[36m◉\u001b[39m \u001b[36mtwo (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2md4f58ac - two commit\u001b[22m\n│\n◯ \u001b[94mone\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m934b663 - one commit\u001b[22m\n│\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│",
+      "stderr": ""
+    },
+    {
+      "id": "pager.interactive.info",
+      "args": [
+        "info"
+      ],
+      "status": 0,
+      "stdout": "PAGER_USED\n\u001b[94mtwo\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[36mParent\u001b[39m: one\n\n\u001b[33mcommit d4f58ac19802ce3247e359399024d2216cbbe158\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit",
+      "stderr": ""
+    },
+    {
+      "id": "pager.interactive.quiet",
+      "args": [
+        "ls",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "pager.interactive.failure",
+      "args": [
+        "ls"
+      ],
+      "status": 1,
+      "stdout": "\u001b[38;5;81m◉\u001b[39m  \u001b[38;5;81mtwo\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mone\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": "\u001b[33mWARNING: Tried to send output to your pager (\u001b[36mexit 3\u001b[39m\u001b[33m) but encountered an error.\u001b[39m\n\u001b[33mYou can change your configured pager or disable paging in \u001b[36mgt config\u001b[39m\u001b[33m\u001b[39m\n\u001b[91mERROR: Command failed with error exit code 3:\u001b[39m\n\u001b[91mexit 3 \u001b[39m\n\u001b[91m\u001b[39m\n\u001b[91m \u001b[39m\n"
+    },
+    {
+      "id": "modify",
+      "args": [
+        "modify",
+        "--no-edit"
+      ],
+      "status": 0,
+      "stdout": "[two b10a06d] two commit\n Date: Mon Jan 1 00:00:00 2024 +0000\n 1 file changed, 1 insertion(+)\n create mode 100644 two.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "modify.quiet",
+      "args": [
+        "modify",
+        "--no-edit",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "down",
+      "args": [
+        "down"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mtwo\u001b[39m\n⮑  one\nChecked out \u001b[36mone\u001b[39m.\nThis branch has not yet been submitted.\nRun \u001b[36mgt submit\u001b[39m to push your changes.\n",
+      "stderr": ""
+    },
+    {
+      "id": "down.trunk",
+      "args": [
+        "down"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mone\u001b[39m\n⮑  main\nChecked out \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "up",
+      "args": [
+        "up"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mmain\u001b[39m\nChecked out \u001b[36mone\u001b[39m.\nThis branch has not yet been submitted.\nRun \u001b[36mgt submit\u001b[39m to push your changes.\n",
+      "stderr": ""
+    },
+    {
+      "id": "top",
+      "args": [
+        "top"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mone\u001b[39m\nChecked out \u001b[36mtwo\u001b[39m.\nThis branch has not yet been submitted.\nRun \u001b[36mgt submit\u001b[39m to push your changes.\n",
+      "stderr": ""
+    },
+    {
+      "id": "top.noop",
+      "args": [
+        "top"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mtwo\u001b[39m\nAlready at the top of the stack.\n",
+      "stderr": ""
+    },
+    {
+      "id": "up.noop",
+      "args": [
+        "up"
+      ],
+      "status": 1,
+      "stdout": "\u001b[94mtwo\u001b[39m\n",
+      "stderr": "\u001b[91mERROR: Already at the top of the stack. \u001b[39m\n"
+    },
+    {
+      "id": "bottom",
+      "args": [
+        "bottom"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mtwo\u001b[39m\n⮑  one\nChecked out \u001b[36mone\u001b[39m.\nThis branch has not yet been submitted.\nRun \u001b[36mgt submit\u001b[39m to push your changes.\n",
+      "stderr": ""
+    },
+    {
+      "id": "bottom.noop",
+      "args": [
+        "bottom"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mone\u001b[39m\nAlready at the bottom most branch in the stack.\n",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.noop",
+      "args": [
+        "checkout",
+        "one"
+      ],
+      "status": 0,
+      "stdout": "Already on \u001b[36mone\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.trunk",
+      "args": [
+        "checkout",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "create.empty",
+      "args": [
+        "create",
+        "empty",
+        "-m",
+        "Empty"
+      ],
+      "status": 0,
+      "stdout": "No staged changes; creating a branch with no commit.\n",
+      "stderr": ""
+    },
+    {
+      "id": "empty.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "\u001b[36m◉\u001b[39m \u001b[36mempty (current)\u001b[39m\n│ \n│ \n│\n│  ◯ \u001b[94mtwo\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m2411e7a - two commit\u001b[22m\n│  │\n│  ◯ \u001b[94mone\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m934b663 - one commit\u001b[22m\n│  │\n├──┘\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "empty.ls",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◉\u001b[39m    \u001b[38;5;81mempty\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m  \u001b[38;5;114mtwo\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m  \u001b[38;5;114mone\u001b[39m\n\u001b[38;5;81m◯\u001b[39m\u001b[38;5;81m─\u001b[39m\u001b[38;5;114m┘\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "empty.info",
+      "args": [
+        "info"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mempty\u001b[39m\n\n\n\u001b[36mParent\u001b[39m: main\n\n\n",
+      "stderr": ""
+    },
+    {
+      "id": "delete.empty",
+      "args": [
+        "delete",
+        "empty",
+        "--force"
+      ],
+      "status": 0,
+      "stdout": "Deleted branch \u001b[31mempty\u001b[39m (previously at c186ad0fb7c58c5129ba46ebd09541695282b941)\n",
+      "stderr": ""
+    },
+    {
+      "id": "create.quiet",
+      "args": [
+        "create",
+        "quiet",
+        "-m",
+        "Quiet",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "delete.quiet",
+      "args": [
+        "delete",
+        "quiet",
+        "--force",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "freeze",
+      "args": [
+        "freeze",
+        "two"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "freeze.noop",
+      "args": [
+        "freeze",
+        "two"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "frozen.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mtwo\u001b[39m \u001b[33m(frozen)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m2411e7a - two commit\u001b[22m\n│\n◯ \u001b[94mone\u001b[39m \u001b[33m(frozen)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m934b663 - one commit\u001b[22m\n│\n\u001b[36m◉\u001b[39m \u001b[36mmain (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "frozen.ls",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mtwo \u001b[0m(frozen)\u001b[0m\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mone \u001b[0m(frozen)\u001b[0m\u001b[39m\n\u001b[38;5;81m◉\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "frozen.info",
+      "args": [
+        "info",
+        "two"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mtwo\u001b[39m \u001b[33m(frozen)\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[36mParent\u001b[39m: one\n\n\u001b[33mcommit 2411e7a02877836e23ca2a339b2cb8810d712852\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    two commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.frozen",
+      "args": [
+        "checkout",
+        "two"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mtwo\u001b[39m.\nThis branch has not yet been submitted.\nRun \u001b[36mgt submit\u001b[39m to push your changes.\n",
+      "stderr": ""
+    },
+    {
+      "id": "frozen.restack",
+      "args": [
+        "restack"
+      ],
+      "status": 0,
+      "stdout": "Did not restack branch \u001b[33mone\u001b[39m because it is frozen.\nDid not restack branch \u001b[33mtwo\u001b[39m because it is frozen.\n",
+      "stderr": ""
+    },
+    {
+      "id": "frozen.restack.quiet",
+      "args": [
+        "restack",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "unfreeze",
+      "args": [
+        "unfreeze",
+        "one"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "unfreeze.noop",
+      "args": [
+        "unfreeze",
+        "one"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.trunk.again",
+      "args": [
+        "checkout",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "create.zeta",
+      "args": [
+        "create",
+        "zeta",
+        "-m",
+        "zeta commit"
+      ],
+      "status": 0,
+      "stdout": "1 file changed, 1 insertion(+)\n create mode 100644 zeta.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.after-zeta",
+      "args": [
+        "checkout",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "create.alpha",
+      "args": [
+        "create",
+        "alpha",
+        "-m",
+        "alpha commit"
+      ],
+      "status": 0,
+      "stdout": "1 file changed, 1 insertion(+)\n create mode 100644 alpha.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.after-alpha",
+      "args": [
+        "checkout",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "siblings.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94malpha\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m03f61c7 - alpha commit\u001b[22m\n│\n│  ◯ \u001b[94mtwo\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m2411e7a - two commit\u001b[22m\n│  │\n│  ◯ \u001b[94mone\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m934b663 - one commit\u001b[22m\n│  │\n│  │  ◯ \u001b[94mzeta\u001b[39m\n│  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │ \n│  │  │ \u001b[2m9d2a383 - zeta commit\u001b[22m\n│  │  │\n├──┴──┘\n\u001b[36m◉\u001b[39m \u001b[36mmain (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "siblings.ls",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◯\u001b[39m      \u001b[38;5;81malpha\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m    \u001b[38;5;114mtwo\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m    \u001b[38;5;114mone\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m◯\u001b[39m  \u001b[38;5;107mzeta\u001b[39m\n\u001b[38;5;81m◉\u001b[39m\u001b[38;5;81m─\u001b[39m\u001b[38;5;114m┴\u001b[39m\u001b[38;5;114m─\u001b[39m\u001b[38;5;107m┘\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "siblings.reverse",
+      "args": [
+        "log",
+        "--reverse"
+      ],
+      "status": 0,
+      "stdout": "\u001b[36m◉\u001b[39m \u001b[36mmain (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n├──┬──┐\n│  │  ◯ \u001b[94malpha\u001b[39m\n│  │    \u001b[2m<relative date>\u001b[22m\n│  │    \n│  │    \u001b[2m03f61c7 - alpha commit\u001b[22m\n│  │   \n│  ◯ \u001b[94mone\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m934b663 - one commit\u001b[22m\n│  │\n│  ◯ \u001b[94mtwo\u001b[39m\n│    \u001b[2m<relative date>\u001b[22m\n│    \n│    \u001b[2m2411e7a - two commit\u001b[22m\n│   \n◯ \u001b[94mzeta\u001b[39m\n  \u001b[2m<relative date>\u001b[22m\n  \n  \u001b[2m9d2a383 - zeta commit\u001b[22m\n \n",
+      "stderr": ""
+    },
+    {
+      "id": "siblings.children",
+      "args": [
+        "children"
+      ],
+      "status": 0,
+      "stdout": "one\nzeta\nalpha\n",
+      "stderr": ""
+    },
+    {
+      "id": "siblings.up",
+      "args": [
+        "up"
+      ],
+      "status": 1,
+      "stdout": "\u001b[94mmain\u001b[39m\n",
+      "stderr": "\u001b[91mERROR: Cannot get upstack branch in non-interactive mode; multiple choices available:\u001b[39m\n\u001b[91mone\u001b[39m\n\u001b[91mzeta\u001b[39m\n\u001b[91malpha \u001b[39m\n"
+    },
+    {
+      "id": "untrack",
+      "args": [
+        "untrack",
+        "alpha"
+      ],
+      "status": 0,
+      "stdout": "Untracked branch \u001b[33malpha\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "log.untracked",
+      "args": [
+        "log",
+        "--show-untracked"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mtwo\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m2411e7a - two commit\u001b[22m\n│\n◯ \u001b[94mone\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m934b663 - one commit\u001b[22m\n│\n│  ◯ \u001b[94mzeta\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m9d2a383 - zeta commit\u001b[22m\n│  │\n├──┘\n\u001b[36m◉\u001b[39m \u001b[36mmain (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n\n\u001b[93mUntracked branches:\u001b[39m\nalpha\n",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.untracked",
+      "args": [
+        "checkout",
+        "alpha"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36malpha\u001b[39m.\nThis branch is not tracked by Graphite.\n",
+      "stderr": ""
+    },
+    {
+      "id": "parent.untracked",
+      "args": [
+        "parent"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot perform this operation on untracked branch alpha.\u001b[39m\n\u001b[91mYou can track it by specifying its parent with gt track. \u001b[39m\n"
+    },
+    {
+      "id": "track",
+      "args": [
+        "track",
+        "alpha",
+        "--parent",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Tracked branch \u001b[32malpha\u001b[39m with parent \u001b[94mmain\u001b[39m \u001b[2m(includes 1 commit)\u001b[22m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "track.again",
+      "args": [
+        "track",
+        "alpha",
+        "--parent",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Tracked branch \u001b[32malpha\u001b[39m with parent \u001b[94mmain\u001b[39m \u001b[2m(includes 1 commit)\u001b[22m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "rename",
+      "args": [
+        "rename",
+        "beta"
+      ],
+      "status": 0,
+      "stdout": "Successfully renamed \u001b[94malpha\u001b[39m to \u001b[32mbeta\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.before-advance",
+      "args": [
+        "checkout",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "freeze.stale",
+      "args": [
+        "freeze",
+        "zeta"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "stale.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mbeta\u001b[39m \u001b[33m(needs restack)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m03f61c7 - alpha commit\u001b[22m\n│\n│  ◯ \u001b[94mtwo\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m2411e7a - two commit\u001b[22m\n│  │\n│  ◯ \u001b[94mone\u001b[39m \u001b[33m(needs restack)\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m934b663 - one commit\u001b[22m\n│  │\n│  │  ◯ \u001b[94mzeta\u001b[39m \u001b[33m(frozen)\u001b[39m\n│  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │ \n│  │  │ \u001b[2m9d2a383 - zeta commit\u001b[22m\n│  │  │\n├──┴──┘\n\u001b[36m◉\u001b[39m \u001b[36mmain (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mff1e81e - Updated base\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "stale.ls",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◯\u001b[39m      \u001b[38;5;81mbeta \u001b[0m(needs restack)\u001b[0m\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m    \u001b[38;5;114mtwo\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m    \u001b[38;5;114mone \u001b[0m(needs restack)\u001b[0m\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m◯\u001b[39m  \u001b[38;5;107mzeta \u001b[0m(frozen)\u001b[0m\u001b[39m\n\u001b[38;5;81m◉\u001b[39m\u001b[38;5;81m─\u001b[39m\u001b[38;5;114m┴\u001b[39m\u001b[38;5;114m─\u001b[39m\u001b[38;5;107m┘\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.stale-ancestor",
+      "args": [
+        "checkout",
+        "two"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mtwo\u001b[39m.\nThe downstack branch \u001b[36mone\u001b[39m has fallen behind \u001b[94mmain\u001b[39m.\nRun \u001b[36mgt restack\u001b[39m to resolve.\n",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.stale",
+      "args": [
+        "checkout",
+        "beta"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mbeta\u001b[39m.\nThis branch has fallen behind \u001b[94mmain\u001b[39m.\nRun \u001b[36mgt restack\u001b[39m to resolve.\n",
+      "stderr": ""
+    },
+    {
+      "id": "restack",
+      "args": [
+        "restack"
+      ],
+      "status": 0,
+      "stdout": "Restacked \u001b[32mbeta\u001b[39m on \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "restack.noop",
+      "args": [
+        "restack"
+      ],
+      "status": 0,
+      "stdout": "\u001b[36mbeta\u001b[39m does not need to be restacked on \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "checkout.before-hook",
+      "args": [
+        "checkout",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "create.hook",
+      "args": [
+        "create",
+        "hook",
+        "-m",
+        "Hook"
+      ],
+      "status": 0,
+      "stdout": "1 file changed, 1 insertion(+)\n create mode 100644 hook.txt\n",
+      "stderr": "hook stdout\nhook stderr\n"
+    },
+    {
+      "id": "modify.hook.quiet",
+      "args": [
+        "modify",
+        "--no-edit",
+        "--quiet"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": "hook stdout\nhook stderr\n"
+    },
+    {
+      "id": "modify.hook.failure",
+      "args": [
+        "modify",
+        "--no-edit"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "failure stdout\nfailure stderr\n\u001b[91mERROR: Command failed with error exit code 1:\u001b[39m\n\u001b[91mgit commit --amend --no-edit\u001b[39m\n\u001b[91m\u001b[39m\n\u001b[91m \u001b[39m\n"
+    },
+    {
+      "id": "error.missing",
+      "args": [
+        "checkout",
+        "missing"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Could not find branch missing. \u001b[39m\n"
+    },
+    {
+      "id": "error.missing.quiet",
+      "args": [
+        "checkout",
+        "missing",
+        "--quiet"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Could not find branch missing. \u001b[39m\n"
+    },
+    {
+      "id": "error.missing.plain",
+      "args": [
+        "checkout",
+        "missing"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "ERROR: Could not find branch missing. \n"
+    },
+    {
+      "id": "pr.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mapproved\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[33mPR #101\u001b[39m approved title\n│ \u001b[35mhttps://github.com/test/repo/pull/101\u001b[39m\n│ \u001b[2mLast submitted version: v1\u001b[22m\n│ \n│ \u001b[2m17a39f5 - approved commit\u001b[22m\n│\n│  ◯ \u001b[2m\u001b[94mclosed\u001b[39m\u001b[22m\n│  │ \u001b[2m\u001b[2m<relative date>\u001b[22m\u001b[2m\u001b[22m\n│  │ \n│  │ \u001b[2m\u001b[33mPR #102\u001b[39m closed title\u001b[22m\n│  │ \u001b[2m\u001b[35mhttps://github.com/test/repo/pull/102\u001b[39m\u001b[22m\n│  │ \u001b[2m\u001b[2mLast submitted version: v1\u001b[22m\u001b[2m\u001b[22m\n│  │ \n│  │ \u001b[2m\u001b[2m69cef0c - closed commit\u001b[22m\u001b[2m\u001b[22m\n│  │\n│  │  ◯ \u001b[94mdraft\u001b[39m\n│  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │ \n│  │  │ \u001b[33mPR #103\u001b[39m draft title\n│  │  │ \u001b[35mhttps://github.com/test/repo/pull/103\u001b[39m\n│  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │ \n│  │  │ \u001b[2mde9f464 - draft commit\u001b[22m\n│  │  │\n│  │  │  ◯ \u001b[2m\u001b[94mmerged\u001b[39m \u001b[33m(merged)\u001b[39m\u001b[22m\n│  │  │  │ \u001b[2m\u001b[2m<relative date>\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │ \n│  │  │  │ \u001b[2m\u001b[33mPR #104\u001b[39m merged title\u001b[22m\n│  │  │  │ \u001b[2m\u001b[35mhttps://github.com/test/repo/pull/104\u001b[39m\u001b[22m\n│  │  │  │ \u001b[2m\u001b[2mLast submitted version: v1\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │ \n│  │  │  │ \u001b[2m\u001b[2mb0ca322 - merged commit\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │\n│  │  │  │  \u001b[36m◉\u001b[39m \u001b[36mno-pr (current)\u001b[39m\n│  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │ \n│  │  │  │  │ \u001b[2mc8a8017 - no-pr commit\u001b[22m\n│  │  │  │  │\n│  │  │  │  │  ◯ \u001b[94mopen\u001b[39m\n│  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │ \n│  │  │  │  │  │ \u001b[33mPR #105\u001b[39m open title\n│  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/105\u001b[39m\n│  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │ \n│  │  │  │  │  │ \u001b[2m36f7f3f - open commit\u001b[22m\n│  │  │  │  │  │\n│  │  │  │  │  │  ◯ \u001b[94mrequested\u001b[39m\n│  │  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │  │ \n│  │  │  │  │  │  │ \u001b[33mPR #106\u001b[39m requested title\n│  │  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/106\u001b[39m\n│  │  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │  │ \n│  │  │  │  │  │  │ \u001b[2m70b0d97 - requested commit\u001b[22m\n│  │  │  │  │  │  │\n│  │  │  │  │  │  │  ◯ \u001b[94mrequired\u001b[39m\n│  │  │  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │  │  │ \n│  │  │  │  │  │  │  │ \u001b[33mPR #107\u001b[39m required title\n│  │  │  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/107\u001b[39m\n│  │  │  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │  │  │ \n│  │  │  │  │  │  │  │ \u001b[2m12bdd98 - required commit\u001b[22m\n│  │  │  │  │  │  │  │\n├──┴──┴──┴──┴──┴──┴──┘\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.log.plain",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ approved\n│ <relative date>\n│ \n│ PR #101 approved title\n│ https://github.com/test/repo/pull/101\n│ Last submitted version: v1\n│ \n│ 17a39f5 - approved commit\n│\n│  ◯ closed\n│  │ <relative date>\n│  │ \n│  │ PR #102 closed title\n│  │ https://github.com/test/repo/pull/102\n│  │ Last submitted version: v1\n│  │ \n│  │ 69cef0c - closed commit\n│  │\n│  │  ◯ draft\n│  │  │ <relative date>\n│  │  │ \n│  │  │ PR #103 draft title\n│  │  │ https://github.com/test/repo/pull/103\n│  │  │ Last submitted version: v1\n│  │  │ \n│  │  │ de9f464 - draft commit\n│  │  │\n│  │  │  ◯ merged (merged)\n│  │  │  │ <relative date>\n│  │  │  │ \n│  │  │  │ PR #104 merged title\n│  │  │  │ https://github.com/test/repo/pull/104\n│  │  │  │ Last submitted version: v1\n│  │  │  │ \n│  │  │  │ b0ca322 - merged commit\n│  │  │  │\n│  │  │  │  ◉ no-pr (current)\n│  │  │  │  │ <relative date>\n│  │  │  │  │ \n│  │  │  │  │ c8a8017 - no-pr commit\n│  │  │  │  │\n│  │  │  │  │  ◯ open\n│  │  │  │  │  │ <relative date>\n│  │  │  │  │  │ \n│  │  │  │  │  │ PR #105 open title\n│  │  │  │  │  │ https://github.com/test/repo/pull/105\n│  │  │  │  │  │ Last submitted version: v1\n│  │  │  │  │  │ \n│  │  │  │  │  │ 36f7f3f - open commit\n│  │  │  │  │  │\n│  │  │  │  │  │  ◯ requested\n│  │  │  │  │  │  │ <relative date>\n│  │  │  │  │  │  │ \n│  │  │  │  │  │  │ PR #106 requested title\n│  │  │  │  │  │  │ https://github.com/test/repo/pull/106\n│  │  │  │  │  │  │ Last submitted version: v1\n│  │  │  │  │  │  │ \n│  │  │  │  │  │  │ 70b0d97 - requested commit\n│  │  │  │  │  │  │\n│  │  │  │  │  │  │  ◯ required\n│  │  │  │  │  │  │  │ <relative date>\n│  │  │  │  │  │  │  │ \n│  │  │  │  │  │  │  │ PR #107 required title\n│  │  │  │  │  │  │  │ https://github.com/test/repo/pull/107\n│  │  │  │  │  │  │  │ Last submitted version: v1\n│  │  │  │  │  │  │  │ \n│  │  │  │  │  │  │  │ 12bdd98 - required commit\n│  │  │  │  │  │  │  │\n├──┴──┴──┴──┴──┴──┴──┘\n◯ main\n│ <relative date>\n│ \n│ c186ad0 - Base 1\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.ls",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◯\u001b[39m                \u001b[38;5;81mapproved\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m              \u001b[38;5;114mclosed\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m◯\u001b[39m            \u001b[38;5;107mdraft\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m◯\u001b[39m          \u001b[38;5;220mmerged\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m◉\u001b[39m        \u001b[38;5;215mno-pr\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m◯\u001b[39m      \u001b[38;5;210mopen\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m│\u001b[39m\u001b[38;5;210m \u001b[39m\u001b[38;5;218m◯\u001b[39m    \u001b[38;5;218mrequested\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m│\u001b[39m\u001b[38;5;210m \u001b[39m\u001b[38;5;218m│\u001b[39m\u001b[38;5;218m \u001b[39m\u001b[38;5;146m◯\u001b[39m  \u001b[38;5;146mrequired\u001b[39m\n\u001b[38;5;81m◯\u001b[39m\u001b[38;5;81m─\u001b[39m\u001b[38;5;114m┴\u001b[39m\u001b[38;5;114m─\u001b[39m\u001b[38;5;107m┴\u001b[39m\u001b[38;5;107m─\u001b[39m\u001b[38;5;220m┴\u001b[39m\u001b[38;5;220m─\u001b[39m\u001b[38;5;215m┴\u001b[39m\u001b[38;5;215m─\u001b[39m\u001b[38;5;210m┴\u001b[39m\u001b[38;5;210m─\u001b[39m\u001b[38;5;218m┴\u001b[39m\u001b[38;5;218m─\u001b[39m\u001b[38;5;146m┘\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.info.body",
+      "args": [
+        "info",
+        "approved",
+        "--body"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mapproved\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[33mPR #101\u001b[39m approved title\n\u001b[35mhttps://github.com/test/repo/pull/101\u001b[39m\n\u001b[2mLast submitted version: v1\u001b[22m\n\n\u001b[36mParent\u001b[39m: main\n\nPR body\n\nDetails.\n\n\u001b[33mcommit 17a39f5c71344943f064353ec6b405883f982e53\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    approved commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.info.closed",
+      "args": [
+        "info",
+        "closed"
+      ],
+      "status": 0,
+      "stdout": "\u001b[2m\u001b[94mclosed\u001b[39m\u001b[22m\n\u001b[2m\u001b[2m<relative date>\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[2m\u001b[33mPR #102\u001b[39m closed title\u001b[22m\n\u001b[2m\u001b[35mhttps://github.com/test/repo/pull/102\u001b[39m\u001b[22m\n\u001b[2m\u001b[2mLast submitted version: v1\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[36mParent\u001b[39m: main\n\n\u001b[33mcommit 69cef0c8d9da245f94a1d7673d5369fbee725633\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    closed commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.info.no-pr",
+      "args": [
+        "info",
+        "no-pr"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mno-pr\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[36mParent\u001b[39m: main\n\n\u001b[33mcommit c8a8017a0a9fc3166e8a089c198c97d998be22a5\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    no-pr commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.checkout.approved",
+      "args": [
+        "checkout",
+        "approved"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mapproved\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.checkout.open",
+      "args": [
+        "checkout",
+        "open"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mopen\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.checkout.draft",
+      "args": [
+        "checkout",
+        "draft"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mdraft\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.checkout.closed",
+      "args": [
+        "checkout",
+        "closed"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mclosed\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.checkout.merged",
+      "args": [
+        "checkout",
+        "merged"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mmerged\u001b[39m.\nThis branch has been merged.\nRun \u001b[36mgt sync\u001b[39m to clean it up.\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.unlink.open",
+      "args": [
+        "unlink",
+        "open"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot perform interactive operation in non-interactive mode. \u001b[39m\n"
+    },
+    {
+      "id": "pr.unlink.again",
+      "args": [
+        "unlink",
+        "open"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot perform interactive operation in non-interactive mode. \u001b[39m\n"
+    },
+    {
+      "id": "pr.freeze.merged",
+      "args": [
+        "freeze",
+        "merged"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "pr.info.merged-frozen",
+      "args": [
+        "info",
+        "merged"
+      ],
+      "status": 0,
+      "stdout": "\u001b[2m\u001b[94mmerged\u001b[39m \u001b[33m(merged)\u001b[39m\u001b[22m\n\u001b[2m\u001b[2m<relative date>\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[2m\u001b[33mPR #104\u001b[39m merged title\u001b[22m\n\u001b[2m\u001b[35mhttps://github.com/test/repo/pull/104\u001b[39m\u001b[22m\n\u001b[2m\u001b[2mLast submitted version: v1\u001b[22m\u001b[2m\u001b[22m\n\n\u001b[36mParent\u001b[39m: main\n\n\u001b[33mcommit b0ca32230be0173c32ee6d705eb2b63bb89e9b97\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    merged commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.ls.merged-frozen",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◯\u001b[39m                \u001b[38;5;81mapproved\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m              \u001b[38;5;114mclosed\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m◯\u001b[39m            \u001b[38;5;107mdraft\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m◉\u001b[39m          \u001b[38;5;220mmerged\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m◯\u001b[39m        \u001b[38;5;215mno-pr\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m◯\u001b[39m      \u001b[38;5;210mopen\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m│\u001b[39m\u001b[38;5;210m \u001b[39m\u001b[38;5;218m◯\u001b[39m    \u001b[38;5;218mrequested\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m│\u001b[39m\u001b[38;5;210m \u001b[39m\u001b[38;5;218m│\u001b[39m\u001b[38;5;218m \u001b[39m\u001b[38;5;146m◯\u001b[39m  \u001b[38;5;146mrequired\u001b[39m\n\u001b[38;5;81m◯\u001b[39m\u001b[38;5;81m─\u001b[39m\u001b[38;5;114m┴\u001b[39m\u001b[38;5;114m─\u001b[39m\u001b[38;5;107m┴\u001b[39m\u001b[38;5;107m─\u001b[39m\u001b[38;5;220m┴\u001b[39m\u001b[38;5;220m─\u001b[39m\u001b[38;5;215m┴\u001b[39m\u001b[38;5;215m─\u001b[39m\u001b[38;5;210m┴\u001b[39m\u001b[38;5;210m─\u001b[39m\u001b[38;5;218m┴\u001b[39m\u001b[38;5;218m─\u001b[39m\u001b[38;5;146m┘\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "pr.checkout.unsubmitted",
+      "args": [
+        "checkout",
+        "approved"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mapproved\u001b[39m.\nThis branch has local changes that need to be submitted.\nRun \u001b[36mgt submit\u001b[39m to push your changes.\n",
+      "stderr": ""
+    },
+    {
+      "id": "worktree.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mapproved\u001b[39m \u001b[2m(linked)\u001b[22m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[33mPR #101\u001b[39m approved title\n│ \u001b[35mhttps://github.com/test/repo/pull/101\u001b[39m\n│ \u001b[2mLast submitted version: v1 (local changes, need submit)\u001b[22m\n│ \n│ \u001b[2mad9ae64 - Unsubmitted\u001b[22m\n│ \u001b[2m17a39f5 - approved commit\u001b[22m\n│\n│  ◯ \u001b[2m\u001b[94mclosed\u001b[39m\u001b[22m\n│  │ \u001b[2m\u001b[2m<relative date>\u001b[22m\u001b[2m\u001b[22m\n│  │ \n│  │ \u001b[2m\u001b[33mPR #102\u001b[39m closed title\u001b[22m\n│  │ \u001b[2m\u001b[35mhttps://github.com/test/repo/pull/102\u001b[39m\u001b[22m\n│  │ \u001b[2m\u001b[2mLast submitted version: v1\u001b[22m\u001b[2m\u001b[22m\n│  │ \n│  │ \u001b[2m\u001b[2m69cef0c - closed commit\u001b[22m\u001b[2m\u001b[22m\n│  │\n│  │  ◯ \u001b[94mdraft\u001b[39m\n│  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │ \n│  │  │ \u001b[33mPR #103\u001b[39m draft title\n│  │  │ \u001b[35mhttps://github.com/test/repo/pull/103\u001b[39m\n│  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │ \n│  │  │ \u001b[2mde9f464 - draft commit\u001b[22m\n│  │  │\n│  │  │  \u001b[36m◉\u001b[39m \u001b[2m\u001b[36mmerged (current)\u001b[39m \u001b[33m(merged)\u001b[39m\u001b[22m\n│  │  │  │ \u001b[2m\u001b[2m<relative date>\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │ \n│  │  │  │ \u001b[2m\u001b[33mPR #104\u001b[39m merged title\u001b[22m\n│  │  │  │ \u001b[2m\u001b[35mhttps://github.com/test/repo/pull/104\u001b[39m\u001b[22m\n│  │  │  │ \u001b[2m\u001b[2mLast submitted version: v1\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │ \n│  │  │  │ \u001b[2m\u001b[2mb0ca322 - merged commit\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │\n│  │  │  │  ◯ \u001b[94mno-pr\u001b[39m\n│  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │ \n│  │  │  │  │ \u001b[2mc8a8017 - no-pr commit\u001b[22m\n│  │  │  │  │\n│  │  │  │  │  ◯ \u001b[94mopen\u001b[39m\n│  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │ \n│  │  │  │  │  │ \u001b[33mPR #105\u001b[39m open title\n│  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/105\u001b[39m\n│  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │ \n│  │  │  │  │  │ \u001b[2m36f7f3f - open commit\u001b[22m\n│  │  │  │  │  │\n│  │  │  │  │  │  ◯ \u001b[94mrequested\u001b[39m\n│  │  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │  │ \n│  │  │  │  │  │  │ \u001b[33mPR #106\u001b[39m requested title\n│  │  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/106\u001b[39m\n│  │  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │  │ \n│  │  │  │  │  │  │ \u001b[2m70b0d97 - requested commit\u001b[22m\n│  │  │  │  │  │  │\n│  │  │  │  │  │  │  ◯ \u001b[94mrequired\u001b[39m\n│  │  │  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │  │  │ \n│  │  │  │  │  │  │  │ \u001b[33mPR #107\u001b[39m required title\n│  │  │  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/107\u001b[39m\n│  │  │  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │  │  │ \n│  │  │  │  │  │  │  │ \u001b[2m12bdd98 - required commit\u001b[22m\n│  │  │  │  │  │  │  │\n├──┴──┴──┴──┴──┴──┴──┘\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "worktree.ls",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◯\u001b[39m                \u001b[38;5;81mapproved \u001b[0m(linked)\u001b[0m\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m              \u001b[38;5;114mclosed\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m◯\u001b[39m            \u001b[38;5;107mdraft\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m◉\u001b[39m          \u001b[38;5;220mmerged\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m◯\u001b[39m        \u001b[38;5;215mno-pr\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m◯\u001b[39m      \u001b[38;5;210mopen\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m│\u001b[39m\u001b[38;5;210m \u001b[39m\u001b[38;5;218m◯\u001b[39m    \u001b[38;5;218mrequested\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m│\u001b[39m\u001b[38;5;210m \u001b[39m\u001b[38;5;218m│\u001b[39m\u001b[38;5;218m \u001b[39m\u001b[38;5;146m◯\u001b[39m  \u001b[38;5;146mrequired\u001b[39m\n\u001b[38;5;81m◯\u001b[39m\u001b[38;5;81m─\u001b[39m\u001b[38;5;114m┴\u001b[39m\u001b[38;5;114m─\u001b[39m\u001b[38;5;107m┴\u001b[39m\u001b[38;5;107m─\u001b[39m\u001b[38;5;220m┴\u001b[39m\u001b[38;5;220m─\u001b[39m\u001b[38;5;215m┴\u001b[39m\u001b[38;5;215m─\u001b[39m\u001b[38;5;210m┴\u001b[39m\u001b[38;5;210m─\u001b[39m\u001b[38;5;218m┴\u001b[39m\u001b[38;5;218m─\u001b[39m\u001b[38;5;146m┘\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "worktree.info",
+      "args": [
+        "info",
+        "approved"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94mapproved\u001b[39m\n\u001b[2m<relative date>\u001b[22m\n\n\u001b[33mPR #101\u001b[39m approved title\n\u001b[35mhttps://github.com/test/repo/pull/101\u001b[39m\n\u001b[2mLast submitted version: v1 (local changes, need submit)\u001b[22m\n\n\u001b[36mParent\u001b[39m: main\n\n\u001b[33mcommit ad9ae64e436f168ae7609daab354aaae6b6a6c69\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    Unsubmitted\n\n\u001b[33mcommit 17a39f5c71344943f064353ec6b405883f982e53\u001b[m\nAuthor: Tester <tester@example.com>\nDate:   Mon Jan 1 00:00:00 2024 +0000\n\n    approved commit\n",
+      "stderr": ""
+    },
+    {
+      "id": "worktree.freeze",
+      "args": [
+        "freeze",
+        "approved"
+      ],
+      "status": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "id": "worktree.frozen.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mapproved\u001b[39m \u001b[33m(frozen)\u001b[39m \u001b[2m(linked)\u001b[22m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[33mPR #101\u001b[39m approved title\n│ \u001b[35mhttps://github.com/test/repo/pull/101\u001b[39m\n│ \u001b[2mLast submitted version: v1 (local changes, need submit)\u001b[22m\n│ \n│ \u001b[2mad9ae64 - Unsubmitted\u001b[22m\n│ \u001b[2m17a39f5 - approved commit\u001b[22m\n│\n│  ◯ \u001b[2m\u001b[94mclosed\u001b[39m\u001b[22m\n│  │ \u001b[2m\u001b[2m<relative date>\u001b[22m\u001b[2m\u001b[22m\n│  │ \n│  │ \u001b[2m\u001b[33mPR #102\u001b[39m closed title\u001b[22m\n│  │ \u001b[2m\u001b[35mhttps://github.com/test/repo/pull/102\u001b[39m\u001b[22m\n│  │ \u001b[2m\u001b[2mLast submitted version: v1\u001b[22m\u001b[2m\u001b[22m\n│  │ \n│  │ \u001b[2m\u001b[2m69cef0c - closed commit\u001b[22m\u001b[2m\u001b[22m\n│  │\n│  │  ◯ \u001b[94mdraft\u001b[39m\n│  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │ \n│  │  │ \u001b[33mPR #103\u001b[39m draft title\n│  │  │ \u001b[35mhttps://github.com/test/repo/pull/103\u001b[39m\n│  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │ \n│  │  │ \u001b[2mde9f464 - draft commit\u001b[22m\n│  │  │\n│  │  │  \u001b[36m◉\u001b[39m \u001b[2m\u001b[36mmerged (current)\u001b[39m \u001b[33m(merged)\u001b[39m\u001b[22m\n│  │  │  │ \u001b[2m\u001b[2m<relative date>\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │ \n│  │  │  │ \u001b[2m\u001b[33mPR #104\u001b[39m merged title\u001b[22m\n│  │  │  │ \u001b[2m\u001b[35mhttps://github.com/test/repo/pull/104\u001b[39m\u001b[22m\n│  │  │  │ \u001b[2m\u001b[2mLast submitted version: v1\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │ \n│  │  │  │ \u001b[2m\u001b[2mb0ca322 - merged commit\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │\n│  │  │  │  ◯ \u001b[94mno-pr\u001b[39m\n│  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │ \n│  │  │  │  │ \u001b[2mc8a8017 - no-pr commit\u001b[22m\n│  │  │  │  │\n│  │  │  │  │  ◯ \u001b[94mopen\u001b[39m\n│  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │ \n│  │  │  │  │  │ \u001b[33mPR #105\u001b[39m open title\n│  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/105\u001b[39m\n│  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │ \n│  │  │  │  │  │ \u001b[2m36f7f3f - open commit\u001b[22m\n│  │  │  │  │  │\n│  │  │  │  │  │  ◯ \u001b[94mrequested\u001b[39m\n│  │  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │  │ \n│  │  │  │  │  │  │ \u001b[33mPR #106\u001b[39m requested title\n│  │  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/106\u001b[39m\n│  │  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │  │ \n│  │  │  │  │  │  │ \u001b[2m70b0d97 - requested commit\u001b[22m\n│  │  │  │  │  │  │\n│  │  │  │  │  │  │  ◯ \u001b[94mrequired\u001b[39m\n│  │  │  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │  │  │ \n│  │  │  │  │  │  │  │ \u001b[33mPR #107\u001b[39m required title\n│  │  │  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/107\u001b[39m\n│  │  │  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │  │  │ \n│  │  │  │  │  │  │  │ \u001b[2m12bdd98 - required commit\u001b[22m\n│  │  │  │  │  │  │  │\n├──┴──┴──┴──┴──┴──┴──┘\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "worktree.frozen.ls",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◯\u001b[39m                \u001b[38;5;81mapproved \u001b[0m(frozen) (linked)\u001b[0m\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m              \u001b[38;5;114mclosed\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m◯\u001b[39m            \u001b[38;5;107mdraft\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m◉\u001b[39m          \u001b[38;5;220mmerged\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m◯\u001b[39m        \u001b[38;5;215mno-pr\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m◯\u001b[39m      \u001b[38;5;210mopen\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m│\u001b[39m\u001b[38;5;210m \u001b[39m\u001b[38;5;218m◯\u001b[39m    \u001b[38;5;218mrequested\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m│\u001b[39m\u001b[38;5;210m \u001b[39m\u001b[38;5;218m│\u001b[39m\u001b[38;5;218m \u001b[39m\u001b[38;5;146m◯\u001b[39m  \u001b[38;5;146mrequired\u001b[39m\n\u001b[38;5;81m◯\u001b[39m\u001b[38;5;81m─\u001b[39m\u001b[38;5;114m┴\u001b[39m\u001b[38;5;114m─\u001b[39m\u001b[38;5;107m┴\u001b[39m\u001b[38;5;107m─\u001b[39m\u001b[38;5;220m┴\u001b[39m\u001b[38;5;220m─\u001b[39m\u001b[38;5;215m┴\u001b[39m\u001b[38;5;215m─\u001b[39m\u001b[38;5;210m┴\u001b[39m\u001b[38;5;210m─\u001b[39m\u001b[38;5;218m┴\u001b[39m\u001b[38;5;218m─\u001b[39m\u001b[38;5;146m┘\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "worktree.linked.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "\u001b[36m◉\u001b[39m \u001b[36mapproved (current)\u001b[39m \u001b[33m(frozen)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[33mPR #101\u001b[39m approved title\n│ \u001b[35mhttps://github.com/test/repo/pull/101\u001b[39m\n│ \u001b[2mLast submitted version: v1 (local changes, need submit)\u001b[22m\n│ \n│ \u001b[2mad9ae64 - Unsubmitted\u001b[22m\n│ \u001b[2m17a39f5 - approved commit\u001b[22m\n│\n│  ◯ \u001b[2m\u001b[94mclosed\u001b[39m\u001b[22m\n│  │ \u001b[2m\u001b[2m<relative date>\u001b[22m\u001b[2m\u001b[22m\n│  │ \n│  │ \u001b[2m\u001b[33mPR #102\u001b[39m closed title\u001b[22m\n│  │ \u001b[2m\u001b[35mhttps://github.com/test/repo/pull/102\u001b[39m\u001b[22m\n│  │ \u001b[2m\u001b[2mLast submitted version: v1\u001b[22m\u001b[2m\u001b[22m\n│  │ \n│  │ \u001b[2m\u001b[2m69cef0c - closed commit\u001b[22m\u001b[2m\u001b[22m\n│  │\n│  │  ◯ \u001b[94mdraft\u001b[39m\n│  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │ \n│  │  │ \u001b[33mPR #103\u001b[39m draft title\n│  │  │ \u001b[35mhttps://github.com/test/repo/pull/103\u001b[39m\n│  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │ \n│  │  │ \u001b[2mde9f464 - draft commit\u001b[22m\n│  │  │\n│  │  │  ◯ \u001b[2m\u001b[94mmerged\u001b[39m \u001b[33m(merged)\u001b[39m \u001b[2m(prs)\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │ \u001b[2m\u001b[2m<relative date>\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │ \n│  │  │  │ \u001b[2m\u001b[33mPR #104\u001b[39m merged title\u001b[22m\n│  │  │  │ \u001b[2m\u001b[35mhttps://github.com/test/repo/pull/104\u001b[39m\u001b[22m\n│  │  │  │ \u001b[2m\u001b[2mLast submitted version: v1\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │ \n│  │  │  │ \u001b[2m\u001b[2mb0ca322 - merged commit\u001b[22m\u001b[2m\u001b[22m\n│  │  │  │\n│  │  │  │  ◯ \u001b[94mno-pr\u001b[39m\n│  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │ \n│  │  │  │  │ \u001b[2mc8a8017 - no-pr commit\u001b[22m\n│  │  │  │  │\n│  │  │  │  │  ◯ \u001b[94mopen\u001b[39m\n│  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │ \n│  │  │  │  │  │ \u001b[33mPR #105\u001b[39m open title\n│  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/105\u001b[39m\n│  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │ \n│  │  │  │  │  │ \u001b[2m36f7f3f - open commit\u001b[22m\n│  │  │  │  │  │\n│  │  │  │  │  │  ◯ \u001b[94mrequested\u001b[39m\n│  │  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │  │ \n│  │  │  │  │  │  │ \u001b[33mPR #106\u001b[39m requested title\n│  │  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/106\u001b[39m\n│  │  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │  │ \n│  │  │  │  │  │  │ \u001b[2m70b0d97 - requested commit\u001b[22m\n│  │  │  │  │  │  │\n│  │  │  │  │  │  │  ◯ \u001b[94mrequired\u001b[39m\n│  │  │  │  │  │  │  │ \u001b[2m<relative date>\u001b[22m\n│  │  │  │  │  │  │  │ \n│  │  │  │  │  │  │  │ \u001b[33mPR #107\u001b[39m required title\n│  │  │  │  │  │  │  │ \u001b[35mhttps://github.com/test/repo/pull/107\u001b[39m\n│  │  │  │  │  │  │  │ \u001b[2mLast submitted version: v1\u001b[22m\n│  │  │  │  │  │  │  │ \n│  │  │  │  │  │  │  │ \u001b[2m12bdd98 - required commit\u001b[22m\n│  │  │  │  │  │  │  │\n├──┴──┴──┴──┴──┴──┴──┘\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2mc186ad0 - Base 1\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "worktree.linked.ls",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◉\u001b[39m                \u001b[38;5;81mapproved \u001b[0m(frozen)\u001b[0m\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m◯\u001b[39m              \u001b[38;5;114mclosed\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m◯\u001b[39m            \u001b[38;5;107mdraft\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m◯\u001b[39m          \u001b[38;5;220mmerged \u001b[0m(prs)\u001b[0m\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m◯\u001b[39m        \u001b[38;5;215mno-pr\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m◯\u001b[39m      \u001b[38;5;210mopen\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m│\u001b[39m\u001b[38;5;210m \u001b[39m\u001b[38;5;218m◯\u001b[39m    \u001b[38;5;218mrequested\u001b[39m\n\u001b[38;5;81m│\u001b[39m\u001b[38;5;81m \u001b[39m\u001b[38;5;114m│\u001b[39m\u001b[38;5;114m \u001b[39m\u001b[38;5;107m│\u001b[39m\u001b[38;5;107m \u001b[39m\u001b[38;5;220m│\u001b[39m\u001b[38;5;220m \u001b[39m\u001b[38;5;215m│\u001b[39m\u001b[38;5;215m \u001b[39m\u001b[38;5;210m│\u001b[39m\u001b[38;5;210m \u001b[39m\u001b[38;5;218m│\u001b[39m\u001b[38;5;218m \u001b[39m\u001b[38;5;146m◯\u001b[39m  \u001b[38;5;146mrequired\u001b[39m\n\u001b[38;5;81m◯\u001b[39m\u001b[38;5;81m─\u001b[39m\u001b[38;5;114m┴\u001b[39m\u001b[38;5;114m─\u001b[39m\u001b[38;5;107m┴\u001b[39m\u001b[38;5;107m─\u001b[39m\u001b[38;5;220m┴\u001b[39m\u001b[38;5;220m─\u001b[39m\u001b[38;5;215m┴\u001b[39m\u001b[38;5;215m─\u001b[39m\u001b[38;5;210m┴\u001b[39m\u001b[38;5;210m─\u001b[39m\u001b[38;5;218m┴\u001b[39m\u001b[38;5;218m─\u001b[39m\u001b[38;5;146m┘\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.init",
+      "args": [
+        "init",
+        "--trunk",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Welcome to Graphite!\n\nTrunk set to \u001b[32mmain\u001b[39m\n\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.trunk",
+      "args": [
+        "trunk"
+      ],
+      "status": 0,
+      "stdout": "main\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.trunk.all",
+      "args": [
+        "trunk",
+        "--all"
+      ],
+      "status": 0,
+      "stdout": "main\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.continue.idle",
+      "args": [
+        "continue"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: No Graphite operation to continue. \u001b[39m\n"
+    },
+    {
+      "id": "flow.abort.idle",
+      "args": [
+        "abort",
+        "--force"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: No Graphite operation to abort. \u001b[39m\n"
+    },
+    {
+      "id": "flow.create.a",
+      "args": [
+        "create",
+        "a",
+        "-m",
+        "a commit"
+      ],
+      "status": 0,
+      "stdout": "1 file changed, 1 insertion(+)\n create mode 100644 a.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.create.b",
+      "args": [
+        "create",
+        "b",
+        "-m",
+        "b commit"
+      ],
+      "status": 0,
+      "stdout": "1 file changed, 1 insertion(+)\n create mode 100644 b.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.create.c",
+      "args": [
+        "create",
+        "c",
+        "-m",
+        "c commit"
+      ],
+      "status": 0,
+      "stdout": "1 file changed, 1 insertion(+)\n create mode 100644 c.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.squash",
+      "args": [
+        "squash",
+        "--no-edit"
+      ],
+      "status": 0,
+      "stdout": "[c 6f7bd65] c commit\n Date: Mon Jan 1 00:00:00 2024 +0000\n 2 files changed, 2 insertions(+)\n create mode 100644 c-extra.txt\n create mode 100644 c.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.squash.single",
+      "args": [
+        "squash",
+        "--no-edit"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Only one commit in branch, nothing to squash. \u001b[39m\n"
+    },
+    {
+      "id": "flow.absorb.nothing",
+      "args": [
+        "absorb",
+        "--force"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94m🔍 Calculating changes to absorb...\u001b[39m\n\u001b[33m✅ No changes to absorb.\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.absorb.dry-run",
+      "args": [
+        "absorb",
+        "--dry-run"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94m🔍 Calculating changes to absorb...\u001b[39m\nStaged changes in \u001b[93mb.txt\u001b[39m:\n\u001b[35m@@ -1,1 +1,1 @@\u001b[39m\nAbsorbing into: \u001b[94mb\u001b[39m\nCommit: \u001b[1m1db90cd - b commit\u001b[22m\n\u001b[31m-b\u001b[39m\n\u001b[32m+b absorbed\u001b[39m\n\n\u001b[94m✅ Dry run complete.\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.absorb",
+      "args": [
+        "absorb",
+        "--force"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94m🔍 Calculating changes to absorb...\u001b[39m\nStaged changes in \u001b[93mb.txt\u001b[39m:\n\u001b[35m@@ -1,1 +1,1 @@\u001b[39m\nAbsorbing into: \u001b[94mb\u001b[39m\nCommit: \u001b[1m1db90cd - b commit\u001b[22m\n\u001b[31m-b\u001b[39m\n\u001b[32m+b absorbed\u001b[39m\n\n\n\u001b[32m🧽 Absorbed 1 change.\u001b[39m\n\u001b[32mb\u001b[39m updated (1 change applied)\n\u001b[36mc\u001b[39m restacked\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.log.after-absorb",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "\u001b[36m◉\u001b[39m \u001b[36mc (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m61cc3d9 - c commit\u001b[22m\n│\n◯ \u001b[94mb\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2ma47862d - b commit\u001b[22m\n│\n◯ \u001b[94ma\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2me99046b - a commit\u001b[22m\n│\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m3b7a613 - Base\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.create.wide",
+      "args": [
+        "create",
+        "wide",
+        "-m",
+        "wide commit"
+      ],
+      "status": 0,
+      "stdout": "1 file changed, 8 insertions(+)\n create mode 100644 wide.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.absorb.mixed.dry-run",
+      "args": [
+        "absorb",
+        "--dry-run"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94m🔍 Calculating changes to absorb...\u001b[39m\nStaged changes in \u001b[93mshared.txt\u001b[39m:\n\u001b[35m@@ -1,1 +1,1 @@\u001b[39m\nNot absorbed\n\u001b[31m-base\u001b[39m\n\u001b[32m+trunk owned edit\u001b[39m\n\nStaged changes in \u001b[93mwide.txt\u001b[39m:\n\u001b[35m@@ -1,1 +1,1 @@\u001b[39m\nAbsorbing into: \u001b[94mwide\u001b[39m\nCommit: \u001b[1mc0cc85d - wide commit\u001b[22m\n\u001b[31m-w1\u001b[39m\n\u001b[32m+w1 edited\u001b[39m\n\u001b[35m@@ -8,1 +8,1 @@\u001b[39m\nAbsorbing into: \u001b[94mwide\u001b[39m\nCommit: \u001b[1mc0cc85d - wide commit\u001b[22m\n\u001b[31m-w8\u001b[39m\n\u001b[32m+w8 edited\u001b[39m\n\n\u001b[94m✅ Dry run complete.\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.absorb.mixed",
+      "args": [
+        "absorb",
+        "--force"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94m🔍 Calculating changes to absorb...\u001b[39m\nStaged changes in \u001b[93mshared.txt\u001b[39m:\n\u001b[35m@@ -1,1 +1,1 @@\u001b[39m\nNot absorbed\n\u001b[31m-base\u001b[39m\n\u001b[32m+trunk owned edit\u001b[39m\n\nStaged changes in \u001b[93mwide.txt\u001b[39m:\n\u001b[35m@@ -1,1 +1,1 @@\u001b[39m\nAbsorbing into: \u001b[94mwide\u001b[39m\nCommit: \u001b[1mc0cc85d - wide commit\u001b[22m\n\u001b[31m-w1\u001b[39m\n\u001b[32m+w1 edited\u001b[39m\n\u001b[35m@@ -8,1 +8,1 @@\u001b[39m\nAbsorbing into: \u001b[94mwide\u001b[39m\nCommit: \u001b[1mc0cc85d - wide commit\u001b[22m\n\u001b[31m-w8\u001b[39m\n\u001b[32m+w8 edited\u001b[39m\n\n\n\u001b[32m🧽 Absorbed 2 changes.\u001b[33m 1 change were not absorbed.\u001b[39m\u001b[32m\u001b[39m\n\u001b[32mwide\u001b[39m updated (2 changes applied)\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.absorb.mixed.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "\u001b[36m◉\u001b[39m \u001b[36mwide (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m89b67f8 - wide commit\u001b[22m\n│\n◯ \u001b[94mc\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m61cc3d9 - c commit\u001b[22m\n│\n◯ \u001b[94mb\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2ma47862d - b commit\u001b[22m\n│\n◯ \u001b[94ma\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2me99046b - a commit\u001b[22m\n│\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m3b7a613 - Base\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.absorb.leftover",
+      "args": [
+        "absorb",
+        "--force"
+      ],
+      "status": 0,
+      "stdout": "\u001b[94m🔍 Calculating changes to absorb...\u001b[39m\nStaged changes in \u001b[93mshared.txt\u001b[39m:\n\u001b[35m@@ -1,1 +1,1 @@\u001b[39m\nNot absorbed\n\u001b[31m-base\u001b[39m\n\u001b[32m+trunk owned edit\u001b[39m\n\n\u001b[33m✅ No changes to absorb.\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.checkout.after-absorb",
+      "args": [
+        "checkout",
+        "c"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mc\u001b[39m.\nThis branch has not yet been submitted.\nRun \u001b[36mgt submit\u001b[39m to push your changes.\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.move",
+      "args": [
+        "move",
+        "--onto",
+        "a",
+        "--source",
+        "c"
+      ],
+      "status": 0,
+      "stdout": "Restacked \u001b[32mc\u001b[39m on \u001b[36ma\u001b[39m.\nRestacked \u001b[32mwide\u001b[39m on \u001b[36mc\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.move.only",
+      "args": [
+        "move",
+        "--onto",
+        "main",
+        "--only"
+      ],
+      "status": 0,
+      "stdout": "Restacked \u001b[32mwide\u001b[39m on \u001b[36ma\u001b[39m.\nRestacked \u001b[32mc\u001b[39m on \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.log.after-move",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mb\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2ma47862d - b commit\u001b[22m\n│\n│  ◯ \u001b[94mwide\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m65962a1 - wide commit\u001b[22m\n│  │\n├──┘\n◯ \u001b[94ma\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2me99046b - a commit\u001b[22m\n│\n│  \u001b[36m◉\u001b[39m \u001b[36mc (current)\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2mffd83c7 - c commit\u001b[22m\n│  │\n├──┘\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m3b7a613 - Base\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.fold.keep",
+      "args": [
+        "fold",
+        "--keep"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot fold a branch into the trunk branch \u001b[39m\n"
+    },
+    {
+      "id": "flow.fold",
+      "args": [
+        "fold"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot fold a branch into the trunk branch \u001b[39m\n"
+    },
+    {
+      "id": "flow.log.after-fold",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mb\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2ma47862d - b commit\u001b[22m\n│\n│  ◯ \u001b[94mwide\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m65962a1 - wide commit\u001b[22m\n│  │\n├──┘\n◯ \u001b[94ma\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2me99046b - a commit\u001b[22m\n│\n│  \u001b[36m◉\u001b[39m \u001b[36mc (current)\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2mffd83c7 - c commit\u001b[22m\n│  │\n├──┘\n◯ \u001b[94mmain\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m3b7a613 - Base\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.unlink",
+      "args": [
+        "unlink"
+      ],
+      "status": 0,
+      "stdout": "No PR associated with c\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.pop",
+      "args": [
+        "pop"
+      ],
+      "status": 0,
+      "stdout": "Popped \u001b[31mc\u001b[39m. Now on \u001b[94mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.log.after-pop",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mb\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2ma47862d - b commit\u001b[22m\n│\n│  ◯ \u001b[94mwide\u001b[39m\n│  │ \u001b[2m<relative date>\u001b[22m\n│  │ \n│  │ \u001b[2m65962a1 - wide commit\u001b[22m\n│  │\n├──┘\n◯ \u001b[94ma\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2me99046b - a commit\u001b[22m\n│\n\u001b[36m◉\u001b[39m \u001b[36mmain (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m3b7a613 - Base\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.undo",
+      "args": [
+        "undo",
+        "--force"
+      ],
+      "status": 0,
+      "stdout": "Successfully rolled back to before \u001b[33mgt pop --no-interactive\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "conflict.init",
+      "args": [
+        "init",
+        "--trunk",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Welcome to Graphite!\n\nTrunk set to \u001b[32mmain\u001b[39m\n\n",
+      "stderr": ""
+    },
+    {
+      "id": "conflict.create",
+      "args": [
+        "create",
+        "conflicting",
+        "-m",
+        "Conflicting"
+      ],
+      "status": 0,
+      "stdout": "1 file changed, 1 insertion(+), 1 deletion(-)\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.checkout.trunk",
+      "args": [
+        "checkout",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.restack.conflict",
+      "args": [
+        "restack"
+      ],
+      "status": 1,
+      "stdout": "\u001b[91mHit conflict restacking \u001b[33mconflicting\u001b[39m\u001b[91m on \u001b[36mmain\u001b[39m\u001b[91m.\u001b[39m\n\n\u001b[33mUnmerged files:\u001b[39m\n\u001b[91mshared.txt\u001b[39m\n\n\u001b[33mYou are here (resolving \u001b[94mconflicting\u001b[39m\u001b[33m):\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mconflicting\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n\n\u001b[33mTo fix and continue your previous Graphite command:\u001b[39m\n(1) resolve the listed merge conflicts\n(2) mark items as resolved by adding them one at a time with \u001b[36mgt add <file>\u001b[39m\n(3) run \u001b[36mgt continue\u001b[39m to continue executing your previous Graphite command\nIt's safe to cancel the ongoing rebase with \u001b[36mgt abort\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.conflict.log",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mconflicting\u001b[39m \u001b[33m(needs restack)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m9a920eb - Conflicting\u001b[22m\n│\n\u001b[36m◉\u001b[39m \u001b[36mmain (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m9cd7bd3 - Upstream change\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.conflict.ls",
+      "args": [
+        "ls"
+      ],
+      "status": 0,
+      "stdout": "\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mconflicting \u001b[0m(needs restack)\u001b[0m\u001b[39m\n\u001b[38;5;81m◉\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.conflict.status",
+      "args": [
+        "status",
+        "--short"
+      ],
+      "status": 0,
+      "stdout": "\u001b[2mPassing command through to git...\u001b[22m\n\u001b[2mRunning: \"\u001b[33mgit status --short\u001b[39m\"\u001b[22m\n\u001b[2m\u001b[22m\nUU shared.txt\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.continue.unresolved",
+      "args": [
+        "continue"
+      ],
+      "status": 1,
+      "stdout": "\u001b[91mRebase conflict is not yet resolved.\u001b[39m\n\n\u001b[33mUnmerged files:\u001b[39m\n\u001b[91mshared.txt\u001b[39m\n\n\u001b[33mYou are here (resolving \u001b[94mconflicting\u001b[39m\u001b[33m):\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mconflicting\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n\n\u001b[33mTo fix and continue your previous Graphite command:\u001b[39m\n(1) resolve the listed merge conflicts\n(2) mark items as resolved by adding them one at a time with \u001b[36mgt add <file>\u001b[39m\n(3) run \u001b[36mgt continue\u001b[39m to continue executing your previous Graphite command\nIt's safe to cancel the ongoing rebase with \u001b[36mgt abort\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.abort",
+      "args": [
+        "abort",
+        "--force"
+      ],
+      "status": 0,
+      "stdout": "Successfully aborted \u001b[33mgt restack --no-interactive\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.log.after-abort",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mconflicting\u001b[39m \u001b[33m(needs restack)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m9a920eb - Conflicting\u001b[22m\n│\n\u001b[36m◉\u001b[39m \u001b[36mmain (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m9cd7bd3 - Upstream change\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.restack.conflict.again",
+      "args": [
+        "restack"
+      ],
+      "status": 1,
+      "stdout": "\u001b[91mHit conflict restacking \u001b[33mconflicting\u001b[39m\u001b[91m on \u001b[36mmain\u001b[39m\u001b[91m.\u001b[39m\n\n\u001b[33mUnmerged files:\u001b[39m\n\u001b[91mshared.txt\u001b[39m\n\n\u001b[33mYou are here (resolving \u001b[94mconflicting\u001b[39m\u001b[33m):\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mconflicting\u001b[39m\n\u001b[38;5;81m◯\u001b[39m  \u001b[38;5;81mmain\u001b[39m\n\n\u001b[33mTo fix and continue your previous Graphite command:\u001b[39m\n(1) resolve the listed merge conflicts\n(2) mark items as resolved by adding them one at a time with \u001b[36mgt add <file>\u001b[39m\n(3) run \u001b[36mgt continue\u001b[39m to continue executing your previous Graphite command\nIt's safe to cancel the ongoing rebase with \u001b[36mgt abort\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.continue",
+      "args": [
+        "continue"
+      ],
+      "status": 0,
+      "stdout": "Resolved rebase conflict for \u001b[32mconflicting\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.log.after-continue",
+      "args": [
+        "log"
+      ],
+      "status": 0,
+      "stdout": "◯ \u001b[94mconflicting\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m5d96273 - Conflicting\u001b[22m\n│\n\u001b[36m◉\u001b[39m \u001b[36mmain (current)\u001b[39m\n│ \u001b[2m<relative date>\u001b[22m\n│ \n│ \u001b[2m9cd7bd3 - Upstream change\u001b[22m\n│\n",
+      "stderr": ""
+    },
+    {
+      "id": "flow.abort.after-continue",
+      "args": [
+        "abort",
+        "--force"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: No Graphite operation to abort. \u001b[39m\n"
+    },
+    {
+      "id": "error.create.nothing-staged",
+      "args": [
+        "create",
+        "nothing",
+        "-m",
+        "Nothing"
+      ],
+      "status": 0,
+      "stdout": "No staged changes; creating a branch with no commit.\n",
+      "stderr": ""
+    },
+    {
+      "id": "error.info.missing",
+      "args": [
+        "info",
+        "missing"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Could not find branch missing. \u001b[39m\n"
+    },
+    {
+      "id": "flow.checkout.trunk.again",
+      "args": [
+        "checkout",
+        "main"
+      ],
+      "status": 0,
+      "stdout": "Checked out \u001b[36mmain\u001b[39m.\n",
+      "stderr": ""
+    },
+    {
+      "id": "error.delete.trunk",
+      "args": [
+        "delete",
+        "main",
+        "--force"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot delete trunk! \u001b[39m\n"
+    },
+    {
+      "id": "error.untrack.trunk",
+      "args": [
+        "untrack",
+        "main",
+        "--force"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Can't untrack trunk! \u001b[39m\n"
+    },
+    {
+      "id": "error.rename.trunk",
+      "args": [
+        "rename",
+        "renamed"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot perform this operation on the trunk branch. \u001b[39m\n"
+    },
+    {
+      "id": "error.squash.trunk",
+      "args": [
+        "squash",
+        "--no-edit"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot perform this operation on the trunk branch.\u001b[39m\n\u001b[91m\u001b[39m\n\u001b[91mmain \u001b[39m\n"
+    },
+    {
+      "id": "error.fold.trunk",
+      "args": [
+        "fold"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot perform this operation on the trunk branch. \u001b[39m\n"
+    },
+    {
+      "id": "error.pop.trunk",
+      "args": [
+        "pop"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot perform this operation on the trunk branch. \u001b[39m\n"
+    },
+    {
+      "id": "error.move.trunk",
+      "args": [
+        "move",
+        "--onto",
+        "conflicting"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot perform this operation on the trunk branch.\u001b[39m\n\u001b[91m\u001b[39m\n\u001b[91mmain \u001b[39m\n"
+    },
+    {
+      "id": "error.absorb.trunk",
+      "args": [
+        "absorb",
+        "--force"
+      ],
+      "status": 1,
+      "stdout": "",
+      "stderr": "\u001b[91mERROR: Cannot perform this operation on the trunk branch.\u001b[39m\n\u001b[91m\u001b[39m\n\u001b[91mmain \u001b[39m\n"
+    },
+    {
+      "id": "error.unlink.trunk",
+      "args": [
+        "unlink"
+      ],
+      "status": 0,
+      "stdout": "No PR associated with main\n",
+      "stderr": ""
+    }
+  ]
+}

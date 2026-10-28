@@ -24,6 +24,8 @@ export const handler = async (argv: argsT): Promise<void> => {
         select: argv.select,
         always: argv.always,
         branch: argv.branch,
+        stackSync: argv['stack-sync'],
+        preferLocal: argv.reconcile === 'local',
       },
       context
     );
