@@ -1,14 +1,14 @@
 {
-  "name": "@tianrendong/gt-cli",
+  "name": "@tianrendong/graphite",
   "version": "0.6.47",
   "description": "gt CLI with GitHub Stack synchronization and optional Graphite submission.",
   "license": "AGPL-3.0-only",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
-  "homepage": "https://github.com/tianrendong/gt-cli#readme",
+  "homepage": "https://github.com/tianrendong/graphite#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/tianrendong/gt-cli.git",
+    "url": "git+https://github.com/tianrendong/graphite.git",
     "directory": "apps/cli"
   },
   "keywords": [
@@ -34,12 +34,12 @@
     "yargs": "^17.5.1"
   },
   "publishConfig": {
-    "access": "restricted",
+    "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "prepack": "node ../../.yarn/releases/yarn-3.2.1.cjs workspace @tianrendong/gt-cli build && node scripts/package-source.cjs",
-    "prepublishOnly": "node ../../.yarn/releases/yarn-3.2.1.cjs workspace @tianrendong/gt-cli build",
+    "prepack": "node ../../.yarn/releases/yarn-3.2.1.cjs workspace @tianrendong/graphite build && node scripts/package-source.cjs",
+    "prepublishOnly": "node ../../.yarn/releases/yarn-3.2.1.cjs workspace @tianrendong/graphite build",
     "lint": "eslint src --quiet --ext .ts --cache",
     "check": "tsc --noEmit",
     "build": "rm -rf dist/ && yarn lint && tsc && node scripts/command-manifest.cjs && cp scripts/node_version.js dist/scripts/node_version.js && cp src/lib/gt.fish dist/src/lib/gt.fish",

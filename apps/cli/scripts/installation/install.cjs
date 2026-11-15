@@ -138,7 +138,7 @@ function snapshotSource(root) {
   const pkg = JSON.parse(
     fs.readFileSync(path.join(root, 'apps/cli/package.json'))
   );
-  if (pkg.name !== '@tianrendong/gt-cli')
+  if (pkg.name !== '@tianrendong/graphite')
     throw Error('Not the gt-cli source repository.');
   const names = sourceFiles(root),
     records = sourceRecord(root, names);
@@ -246,7 +246,7 @@ function packagePrebuilt(root) {
 function managementPlan(slot) {
   const file = path.join(path.dirname(slot), 'gt-cli');
   const content = `#!/bin/sh\n# Managed gt-cli installer entry (schema 1).\nexec ${t.quote(
-    path.join(home, 'current/app/node_modules/@tianrendong/gt-cli/bin/gt-cli')
+    path.join(home, 'current/app/node_modules/@tianrendong/graphite/bin/gt-cli')
   )} "$@"\n`;
   const stat = fs.lstatSync(file, { throwIfNoEntry: false });
   if (
@@ -325,10 +325,10 @@ async function main() {
     '--registry=https://registry.npmjs.org/',
     artifact,
   ]);
-  const installed = path.join(release, 'app/node_modules/@tianrendong/gt-cli');
+  const installed = path.join(release, 'app/node_modules/@tianrendong/graphite');
   const pkg = JSON.parse(fs.readFileSync(path.join(installed, 'package.json')));
   if (
-    pkg.name !== '@tianrendong/gt-cli' ||
+    pkg.name !== '@tianrendong/graphite' ||
     pkg.version !==
       JSON.parse(fs.readFileSync(path.join(cliRoot, 'package.json'))).version
   )

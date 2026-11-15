@@ -9,7 +9,7 @@ This package contains two tools:
 To install the package, run:
 
 ```sh
-npm login && npx -y @tianrendong/gt-cli@latest install
+npm login && npx -y @tianrendong/graphite@latest install
 ```
 
 ## Enable

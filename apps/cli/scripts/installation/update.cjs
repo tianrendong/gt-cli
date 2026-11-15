@@ -10,7 +10,7 @@ const semver = require('semver');
 const stripAnsi = require('strip-ansi');
 const t = require('./install_tools.cjs');
 const { color, diagnostic, help } = require('./output.cjs');
-const PACKAGE = '@tianrendong/gt-cli';
+const PACKAGE = '@tianrendong/graphite';
 const REGISTRY = 'https://registry.npmjs.org/';
 const RELATIVE = /^versions\/\.install-[a-zA-Z0-9]+$/;
 const cli = fs.realpathSync(path.resolve(__dirname, '../..'));
@@ -413,7 +413,7 @@ async function update(info) {
       color(
         'stdout',
         'cyan',
-        `Checking npm for latest @tianrendong/gt-cli (current: ${info.record.version})...`
+        `Checking npm for latest @tianrendong/graphite (current: ${info.record.version})...`
       )
     );
     const latest = manifest(

@@ -18,5 +18,5 @@ if (fs.existsSync(root)) for (const entry of fs.readdirSync(root)) {
   }
 }
 NODE
-npm uninstall --prefix "$HOME/.local/share/gt-cli" @tianrendong/gt-cli
+npm uninstall --prefix "$HOME/.local/share/gt-cli" @tianrendong/graphite
 # Keep manifests and native backups as recovery evidence; never delete lock files.

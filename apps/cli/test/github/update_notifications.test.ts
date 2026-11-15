@@ -71,7 +71,7 @@ describe('managed update notifications', function () {
   }
   function install(label: string, version: string) {
     const release = path.join(home, 'versions/.install-' + label);
-    const packageRoot = path.join(release, 'app/node_modules/@tianrendong/gt-cli');
+    const packageRoot = path.join(release, 'app/node_modules/@tianrendong/graphite');
     const entry = path.join(packageRoot, 'dist/src/gt_cli.js');
     const node = path.join(release, 'runtime/bin/node');
     fs.mkdirSync(path.dirname(node), { recursive: true });
@@ -101,7 +101,7 @@ describe('managed update notifications', function () {
     fs.symlinkSync(node, path.join(packageRoot, '.runtime-node'));
     fs.writeFileSync(
       path.join(packageRoot, 'package.json'),
-      JSON.stringify({ name: '@tianrendong/gt-cli', version })
+      JSON.stringify({ name: '@tianrendong/graphite', version })
     );
     fs.writeFileSync(
       path.join(release, '.installed'),
@@ -430,7 +430,7 @@ describe('managed update notifications', function () {
     expect(calls).to.have.length(1);
     expect(calls[0].args.slice(0, 4)).to.deep.equal([
       'view',
-      '@tianrendong/gt-cli@latest',
+      '@tianrendong/graphite@latest',
       'version',
       '--json',
     ]);

@@ -31,7 +31,7 @@ export function notificationInstallation(cliRoot: string): {
   if (!/^versions\/\.install-[a-zA-Z0-9]+$/.test(selected))
     throw Error('Invalid current installation pointer.');
   const current = updater.installation(
-    path.join(running.home, selected, 'app/node_modules/@tianrendong/gt-cli')
+    path.join(running.home, selected, 'app/node_modules/@tianrendong/graphite')
   );
   if (current.home !== running.home)
     throw Error('Current installation is outside this installation home.');
@@ -52,7 +52,7 @@ function latestVersion(info: Installation): string {
     [
       npm,
       'view',
-      '@tianrendong/gt-cli@latest',
+      '@tianrendong/graphite@latest',
       'version',
       '--json',
       '--registry=https://registry.npmjs.org/',

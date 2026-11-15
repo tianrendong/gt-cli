@@ -55,7 +55,7 @@ async function run(): Promise<void> {
   )
     .help()
     .usage(
-      'gt — GitHub-backed stacked changes, compatible with Graphite commands.\nLocal stacks mirror gh stack; submit synchronizes native GitHub Stacks.\n\nhttps://github.com/tianrendong/gt-cli'
+      'gt — GitHub-backed stacked changes, compatible with Graphite commands.\nLocal stacks mirror gh stack; submit synchronizes native GitHub Stacks.\n\nhttps://github.com/tianrendong/graphite'
     )
     .options(globalArgumentsOptions)
     .global(Object.keys(globalArgumentsOptions))

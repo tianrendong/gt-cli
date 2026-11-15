@@ -26,7 +26,7 @@ jobs:
       - name: Install
         run: corepack yarn install --immutable
       - name: Lint
-        run: corepack yarn workspace @tianrendong/gt-cli run lint
+        run: corepack yarn workspace @tianrendong/graphite run lint
       - name: Build
         run: corepack yarn turbo run build
       - name: Setup git
@@ -34,7 +34,7 @@ jobs:
       - name: Git Version
         run: git --version
       - name: Test
-        run: corepack yarn workspace @tianrendong/gt-cli run test-ci
+        run: corepack yarn workspace @tianrendong/graphite run test-ci
 
   superlinter:
     name: "Run superlinter"
