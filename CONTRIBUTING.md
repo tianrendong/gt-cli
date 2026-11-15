@@ -169,6 +169,6 @@ copies it to the generated, Git-ignored `apps/cli/README.md`; do not edit that c
 Detailed CLI documentation lives in `apps/cli/USAGE.md`. README changes appear on
 npm only after publishing a new version.
 
-Publish the verified `@tianrendong/graphite` tarball with `--access public --tag latest`.
+Publish the verified `@tianrendong/gt-cli` tarball with `--access public --tag latest`.
 Never publish shared-types separately. Keep AGPL licensing and corresponding
 source in every release.

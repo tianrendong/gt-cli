@@ -114,7 +114,7 @@ function install(packageFile = arg('--package')) {
     'Installer rebuilt the source installation in place'
   );
   return fs.realpathSync(
-    path.join(env.GT_CLI_HOME, 'current/app/node_modules/@tianrendong/graphite')
+    path.join(env.GT_CLI_HOME, 'current/app/node_modules/@tianrendong/gt-cli')
   );
 }
 function pack(installed, directory) {

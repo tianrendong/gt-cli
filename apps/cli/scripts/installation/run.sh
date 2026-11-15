@@ -4,7 +4,7 @@ ROOT=$1
 . "$ROOT/scripts/installation/output.sh"
 KIND=$2
 shift 2
-CURRENT="${GT_CLI_HOME:-$HOME/.local/share/gt-cli}/current/app/node_modules/@tianrendong/graphite"
+CURRENT="${GT_CLI_HOME:-$HOME/.local/share/gt-cli}/current/app/node_modules/@tianrendong/gt-cli"
 if [ "$KIND" = disable ]; then
   # Escape cannot depend on a healthy private runtime, compiled CLI, or SQLite.
   # Ambient Node is permitted only for this dependency-free rescue command.
@@ -37,5 +37,5 @@ fi
 if [ "$KIND" != update ] && [ "$KIND" != config ] && [ "$KIND" != graphite ] && [ -f "$ROOT/../../.yarn/releases/yarn-3.2.1.cjs" ] && [ -f "$ROOT/dist/src/toggle_cli.js" ]; then
   exec "${GT_NODE_BIN:-node}" "$ROOT/dist/src/toggle_cli.js" "$KIND" "$@"
 fi
-gt_cli_print 2 red 'gt-cli is not installed. Run npx @tianrendong/graphite install first.' >&2
+gt_cli_print 2 red 'gt-cli is not installed. Run npx @tianrendong/gt-cli install first.' >&2
 exit 1

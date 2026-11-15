@@ -1,4 +1,4 @@
-# @tianrendong/graphite
+# @tianrendong/gt-cli
 
 Use **`gt`** for repository initialization and GitHub PR stacks; **`gt-cli`** for
 installation, implementation selection, and settings.
@@ -16,7 +16,7 @@ user-owned `gt` location on PATH. The installer manages runtime dependencies.
 Run outside the gt-cli source checkout:
 
 ```sh
-npx -y @tianrendong/graphite@latest install && gt-cli enable --global
+npx -y @tianrendong/gt-cli@latest install && gt-cli enable --global
 ```
 
 Selects our implementation globally only after installation succeeds.
@@ -95,7 +95,7 @@ and conflicting installation errors still fail rather than silently claiming suc
 
 ### Update notifications
 
-Managed installations check npm's `@tianrendong/graphite@latest` during interactive `gt`
+Managed installations check npm's `@tianrendong/gt-cli@latest` during interactive `gt`
 use, at most once every six hours. Checks run in a detached process using the
 installed private npm runtime and your existing npm authentication/proxy settings.
 They fetch version metadata only: no packages are installed and no repository
@@ -210,7 +210,7 @@ If native routing was restored by global disable, inspect the returned checkout
 and explicitly enable it again before relying on global handoff.
 
 If an updater older than 0.6.5 is stuck resuming an old release, run
-`npx -y @tianrendong/graphite@latest install` outside the source checkout, then `gt-cli update`.
+`npx -y @tianrendong/gt-cli@latest install` outside the source checkout, then `gt-cli update`.
 The newer updater checks npm before resuming and supersedes obsolete checkpoints.
 
 ## CLI backend
@@ -553,7 +553,7 @@ gt-cli graphite reset    # Remove override; inherit global default
 Same scope flags; repository overrides win. GitHub submission is unchanged.
 Requires GitHub.com and native Graphite sign-in or `GT_GRAPHITE_TOKEN`.
 
-[Scope and recovery](https://github.com/tianrendong/graphite/blob/main/docs/cutover.md) · [Contributing](https://github.com/tianrendong/graphite/blob/main/CONTRIBUTING.md)
+[Scope and recovery](https://github.com/tianrendong/gt-cli/blob/main/docs/cutover.md) · [Contributing](https://github.com/tianrendong/gt-cli/blob/main/CONTRIBUTING.md)
 
 **AGPL-3.0-only**. Packages include corresponding source in `source.tar.gz`.
 Based on [gt-gh](https://github.com/tianrendong/gt-gh) and

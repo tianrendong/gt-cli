@@ -91,7 +91,7 @@ if [ -z "$LOCAL_ROOT" ]; then
     "$NODE" "$NPM" login --registry=https://registry.npmjs.org/ </dev/tty
   fi
   PATH="$RELEASE/runtime/bin:$PATH" "$NODE" "$NPM" install --prefix "$RELEASE/bootstrap" --ignore-scripts --no-audit --no-fund \
-    --registry=https://registry.npmjs.org/ @tianrendong/graphite@0.6.1
-  LOCAL_ROOT="$RELEASE/bootstrap/node_modules/@tianrendong/graphite"
+    --registry=https://registry.npmjs.org/ @tianrendong/gt-cli@0.6.48
+  LOCAL_ROOT="$RELEASE/bootstrap/node_modules/@tianrendong/gt-cli"
 fi
 "$NODE" "$LOCAL_ROOT/scripts/installation/install.cjs" --release "$RELEASE" --cli-root "$LOCAL_ROOT" "$@"

@@ -62,7 +62,7 @@ module.exports = function updateScenarios({
   fs.writeFileSync(
     path.join(source, 'package.json'),
     JSON.stringify({
-      name: '@tianrendong/graphite',
+      name: '@tianrendong/gt-cli',
       version: '999.0.0',
       bin: 'missing-command',
     })
@@ -83,7 +83,7 @@ module.exports = function updateScenarios({
     });
     return {
       file,
-      name: '@tianrendong/graphite',
+      name: '@tianrendong/gt-cli',
       version,
       dist: {
         integrity:
@@ -118,7 +118,7 @@ module.exports = function updateScenarios({
 const fs=require('fs'),path=require('path');
 const config=JSON.parse(fs.readFileSync(${JSON.stringify(registry)}));
 const args=process.argv.slice(2);
-if(args[0]==='view'||(args[0]==='pack'&&args[1].startsWith('@tianrendong/graphite@'))){
+if(args[0]==='view'||(args[0]==='pack'&&args[1].startsWith('@tianrendong/gt-cli@'))){
  if(fs.realpathSync(process.cwd())!==config.home)throw Error('Updater used caller workspace');
  if(!args.includes('--registry=https://registry.npmjs.org/'))throw Error('Unexpected registry');
  fs.appendFileSync(config.calls,JSON.stringify(args)+'\\n');
@@ -193,7 +193,7 @@ require('./npm-cli-real.cjs');
   assert.equal(fs.existsSync(path.join(home, 'update.json')), false);
   const activePointer = fs.readlinkSync(current);
   const target = fs.realpathSync(
-    path.join(home, activePointer, 'app/node_modules/@tianrendong/graphite')
+    path.join(home, activePointer, 'app/node_modules/@tianrendong/gt-cli')
   );
   mockRegistry(target);
   report.steps.push(
@@ -228,7 +228,7 @@ require('./npm-cli-real.cjs');
       path.join(
         home,
         originalPointer,
-        'app/node_modules/@tianrendong/graphite/dist/src/index.js'
+        'app/node_modules/@tianrendong/gt-cli/dist/src/index.js'
       )
     )
   );
@@ -294,7 +294,7 @@ require('./npm-cli-real.cjs');
   assert.equal(exec('git', ['rev-parse', 'HEAD'], fresh), newHead);
   assert.equal(fs.existsSync(path.join(home, 'update.json')), false);
   installed = fs.realpathSync(
-    path.join(home, 'current/app/node_modules/@tianrendong/graphite')
+    path.join(home, 'current/app/node_modules/@tianrendong/gt-cli')
   );
   assert.equal(installed, target);
   for (const cwd of [root, repo, fresh, linked])
@@ -325,7 +325,7 @@ require('./npm-cli-real.cjs');
     script: path.join(
       home,
       originalPointer,
-      'app/node_modules/@tianrendong/graphite/dist/src/index.js'
+      'app/node_modules/@tianrendong/gt-cli/dist/src/index.js'
     ),
   };
   fs.writeFileSync(
@@ -381,7 +381,7 @@ require('./npm-cli-real.cjs');
     path.join(
       home,
       originalPointer,
-      'app/node_modules/@tianrendong/graphite/scripts/installation/update.cjs'
+      'app/node_modules/@tianrendong/gt-cli/scripts/installation/update.cjs'
     ),
     `require('fs').writeFileSync(${JSON.stringify(
       oldHelperRan

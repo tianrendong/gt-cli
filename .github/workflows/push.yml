@@ -5,7 +5,7 @@ on:
   push:
     branches: [main]
 
-# Distribution is the public @tianrendong/graphite npm package, not standalone binaries.
+# Distribution is the public @tianrendong/gt-cli npm package, not standalone binaries.
 jobs:
   lint_and_fast_tests:
     name: "Run CLI tests"
@@ -24,7 +24,7 @@ jobs:
       - run: corepack yarn install --immutable
       - run: corepack yarn turbo run build
       - run: git config --global user.email "test@example.invalid" && git config --global user.name "test"
-      - run: corepack yarn workspace @tianrendong/graphite run test
+      - run: corepack yarn workspace @tianrendong/gt-cli run test
 
   superlinter:
     name: "Run superlinter"

@@ -480,9 +480,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tianrendong/graphite@workspace:apps/cli":
+"@tianrendong/gt-cli@workspace:apps/cli":
   version: 0.0.0-use.local
-  resolution: "@tianrendong/graphite@workspace:apps/cli"
+  resolution: "@tianrendong/gt-cli@workspace:apps/cli"
   dependencies:
     "@types/chai": ^4.3.1
     "@types/chai-as-promised": ^7.1.5
@@ -523,7 +523,7 @@ __metadata:
     typescript: ^4.7.3
     yargs: ^17.5.1
   bin:
-    graphite: bin/gt-cli
+    gt-cli: bin/gt-cli
   languageName: unknown
   linkType: soft
 

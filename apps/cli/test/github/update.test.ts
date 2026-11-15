@@ -20,7 +20,7 @@ describe('registry-backed updater boundaries', () => {
 
   it('requires canonical package identity and SHA-512 registry integrity', () => {
     const valid = {
-      name: '@tianrendong/graphite',
+      name: '@tianrendong/gt-cli',
       version: '0.5.0',
       dist: { integrity: 'sha512-YWJjZA==' },
     };
