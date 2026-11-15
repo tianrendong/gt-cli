@@ -1,0 +1,423 @@
+[
+  {
+    "file": "abort.js",
+    "metadata": {
+      "command": "abort",
+      "description": "Abort the current Graphite command halted by a rebase conflict."
+    }
+  },
+  {
+    "file": "absorb.js",
+    "metadata": {
+      "command": "absorb",
+      "aliases": [
+        "ab"
+      ],
+      "description": "Amend staged changes to the relevant commits in the current stack."
+    }
+  },
+  {
+    "file": "aliases.js",
+    "metadata": {
+      "command": "aliases",
+      "description": "Edit your command aliases. Aliases expand as the first word of a gt invocation."
+    }
+  },
+  {
+    "file": "auth.js",
+    "metadata": {
+      "command": "auth",
+      "description": "Authenticate using GitHub CLI credentials; no Graphite account or token is used."
+    }
+  },
+  {
+    "file": "bottom.js",
+    "metadata": {
+      "command": "bottom",
+      "description": "Switch to the branch closest to trunk in the current stack."
+    }
+  },
+  {
+    "file": "branch.js",
+    "metadata": {
+      "command": "branch <command>",
+      "aliases": [
+        "b"
+      ],
+      "desc": "Commands that operate on your current branch. Run `gt branch --help` to learn more."
+    }
+  },
+  {
+    "file": "checkout.js",
+    "metadata": {
+      "command": "checkout [branch]",
+      "description": "Switch to a branch. If no branch is provided, opens an interactive selector."
+    }
+  },
+  {
+    "file": "children.js",
+    "metadata": {
+      "command": "children",
+      "description": "Show the children of the current branch."
+    }
+  },
+  {
+    "file": "commit.js",
+    "metadata": {
+      "command": "commit <command>",
+      "aliases": [
+        "c"
+      ],
+      "desc": "Commands that operate on commits. Run `gt commit --help` to learn more."
+    }
+  },
+  {
+    "file": "completion.js",
+    "eager": true
+  },
+  {
+    "file": "config.js",
+    "metadata": {
+      "command": "config",
+      "description": "Configure the Graphite CLI."
+    }
+  },
+  {
+    "file": "continue.js",
+    "metadata": {
+      "command": "continue",
+      "aliases": [
+        "cont"
+      ],
+      "description": "Continues the most recent Graphite command halted by a merge conflict."
+    }
+  },
+  {
+    "file": "create.js",
+    "metadata": {
+      "command": "create [name]",
+      "description": "Create a new branch stacked on top of the current branch and commit staged changes."
+    }
+  },
+  {
+    "file": "delete.js",
+    "metadata": {
+      "command": "delete [name]",
+      "description": "Delete a branch and its corresponding Graphite metadata."
+    }
+  },
+  {
+    "file": "demo.js",
+    "metadata": {
+      "command": "demo",
+      "description": false
+    }
+  },
+  {
+    "file": "dev.js",
+    "metadata": {
+      "command": "dev <command>",
+      "description": false
+    }
+  },
+  {
+    "file": "down.js",
+    "metadata": {
+      "command": "down [steps]",
+      "description": "Switch to the parent of the current branch."
+    }
+  },
+  {
+    "file": "downstack.js",
+    "metadata": {
+      "command": "downstack <command>",
+      "aliases": [
+        "ds"
+      ],
+      "desc": "Commands that operate on a branch and its ancestors. Run `gt downstack --help` to learn more."
+    }
+  },
+  {
+    "file": "feedback.js",
+    "metadata": {
+      "command": "feedback <command>",
+      "desc": "Commands for providing feedback and debug state."
+    }
+  },
+  {
+    "file": "fish.js",
+    "metadata": {
+      "command": "fish",
+      "aliases": [
+        "fish"
+      ],
+      "description": "Set up fish tab completion."
+    }
+  },
+  {
+    "file": "fold.js",
+    "metadata": {
+      "command": "fold",
+      "description": "Fold a branch's changes into its parent, update dependencies of descendants of the new combined branch, and restack."
+    }
+  },
+  {
+    "file": "freeze.js",
+    "metadata": {
+      "command": "freeze [branch]",
+      "description": "Freeze a branch and any downstack branches, preventing local modifications including restacks."
+    }
+  },
+  {
+    "file": "get.js",
+    "metadata": {
+      "command": "get [branch]",
+      "description": "Sync branches from trunk to the given branch from remote."
+    }
+  },
+  {
+    "file": "github.js",
+    "metadata": {
+      "command": "github <command>",
+      "description": "Inspect and repair the local gh-stack mirror and native GitHub Stacks."
+    }
+  },
+  {
+    "file": "guide.js",
+    "metadata": {
+      "command": "guide [title]",
+      "aliases": [
+        "g"
+      ],
+      "description": "Read extended guides on how to use the gt program."
+    }
+  },
+  {
+    "file": "info.js",
+    "metadata": {
+      "command": "info [branch]",
+      "description": "Display information about a branch."
+    }
+  },
+  {
+    "file": "init.js",
+    "metadata": {
+      "command": "init",
+      "description": "Initialize Graphite in this repository by selecting a trunk branch."
+    }
+  },
+  {
+    "file": "log.js",
+    "metadata": {
+      "command": "log <command>",
+      "aliases": [
+        "l"
+      ],
+      "desc": "Commands that log your stacks."
+    }
+  },
+  {
+    "file": "modify.js",
+    "metadata": {
+      "command": "modify",
+      "description": "Modify the current branch by amending its commit or creating a new commit."
+    }
+  },
+  {
+    "file": "move.js",
+    "metadata": {
+      "command": "move",
+      "description": "Rebase the current branch onto the target branch and restack all descendants."
+    }
+  },
+  {
+    "file": "parent.js",
+    "metadata": {
+      "command": "parent",
+      "description": "Show the parent of the current branch."
+    }
+  },
+  {
+    "file": "pop.js",
+    "metadata": {
+      "command": "pop",
+      "description": "Delete the current branch but retain the state of files in the working tree."
+    }
+  },
+  {
+    "file": "pr.js",
+    "metadata": {
+      "command": "pr [branch]",
+      "description": "Open a GitHub PR, or its bottom PR with the native Stack view. Prints the URL in non-interactive mode."
+    }
+  },
+  {
+    "file": "rename.js",
+    "metadata": {
+      "command": "rename [name]",
+      "description": "Rename a branch and update metadata referencing it. If no branch name is supplied, you will be prompted for a new branch name. Note that this removes any associated GitHub pull request."
+    }
+  },
+  {
+    "file": "reorder.js",
+    "metadata": {
+      "command": "reorder",
+      "description": "Reorder branches between trunk and the current branch, restacking descendants."
+    }
+  },
+  {
+    "file": "repo.js",
+    "metadata": {
+      "command": "repo <command>",
+      "aliases": [
+        "r"
+      ],
+      "desc": "Read or write Graphite's configuration settings for the current repo. Run `gt repo --help` to learn more."
+    }
+  },
+  {
+    "file": "restack.js",
+    "metadata": {
+      "command": "restack",
+      "description": "Ensure each branch in the current stack has its parent in its Git commit history."
+    }
+  },
+  {
+    "file": "revert.js",
+    "metadata": {
+      "command": "revert [sha]",
+      "description": "Create a branch that reverts a commit on the trunk branch."
+    }
+  },
+  {
+    "file": "split.js",
+    "metadata": {
+      "command": "split",
+      "aliases": [
+        "sp"
+      ],
+      "description": "Split the current branch into multiple single-commit branches."
+    }
+  },
+  {
+    "file": "squash.js",
+    "metadata": {
+      "command": "squash",
+      "description": "Squash all commits in the current branch and restack upstack branches."
+    }
+  },
+  {
+    "file": "stack.js",
+    "metadata": {
+      "command": "stack <command>",
+      "aliases": [
+        "s"
+      ],
+      "desc": "Commands that operate on your current stack of branches. Run `gt stack --help` to learn more."
+    }
+  },
+  {
+    "file": "state.js",
+    "metadata": {
+      "command": "state",
+      "description": "Print local branch metadata as JSON (offline)."
+    }
+  },
+  {
+    "file": "submit.js",
+    "metadata": {
+      "command": "submit",
+      "aliases": [
+        "ss"
+      ],
+      "description": "Idempotently force push branches to GitHub, creating or updating pull requests."
+    }
+  },
+  {
+    "file": "sync.js",
+    "metadata": {
+      "command": "sync",
+      "description": "Sync all branches with remote, delete merged branches, and restack where possible."
+    }
+  },
+  {
+    "file": "test.js",
+    "metadata": {
+      "command": "test <command>",
+      "description": "Run a shell command on each branch, aggregate failures, and return to the original branch."
+    }
+  },
+  {
+    "file": "top.js",
+    "metadata": {
+      "command": "top",
+      "description": "Switch to the tip branch of the current stack."
+    }
+  },
+  {
+    "file": "track.js",
+    "metadata": {
+      "command": "track [branch]",
+      "description": "Start tracking the current or provided branch with Graphite by selecting its parent."
+    }
+  },
+  {
+    "file": "trunk.js",
+    "metadata": {
+      "command": "trunk",
+      "description": "Show the current stack trunk, list configured trunks, or add another trunk."
+    }
+  },
+  {
+    "file": "undo.js",
+    "metadata": {
+      "command": "undo",
+      "description": "Undo the last local gt operation in this worktree, including branch tips, metadata, index, and working files. Remote changes are not undone."
+    }
+  },
+  {
+    "file": "unfreeze.js",
+    "metadata": {
+      "command": "unfreeze [branch]",
+      "description": "Mark a branch and any upstack branches as unfrozen, enabling local modifications."
+    }
+  },
+  {
+    "file": "unlink.js",
+    "metadata": {
+      "command": "unlink [branch]",
+      "description": "Unlink the PR currently associated with the branch."
+    }
+  },
+  {
+    "file": "untrack.js",
+    "metadata": {
+      "command": "untrack [branch]",
+      "description": "Stop tracking a branch with Graphite."
+    }
+  },
+  {
+    "file": "up.js",
+    "metadata": {
+      "command": "up [steps]",
+      "description": "Switch to the child of the current branch."
+    }
+  },
+  {
+    "file": "upstack.js",
+    "metadata": {
+      "command": "upstack <command>",
+      "aliases": [
+        "us"
+      ],
+      "desc": "Commands that operate on a branch and its descendants. Run `gt upstack --help` to learn more."
+    }
+  },
+  {
+    "file": "user.js",
+    "metadata": {
+      "command": "user <command>",
+      "desc": "Read or write Graphite's user configuration settings. Run `gt user --help` to learn more."
+    }
+  }
+]

@@ -1,0 +1,42 @@
+name: Push CI
+permissions:
+  contents: read
+on:
+  push:
+    branches: [main]
+
+# Distribution is the public @tianrendong/gt-cli npm package, not standalone binaries.
+jobs:
+  lint_and_fast_tests:
+    name: "Run CLI tests"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [22.x, 24.x]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: corepack enable
+      - run: corepack yarn install --immutable
+      - run: corepack yarn turbo run build
+      - run: git config --global user.email "test@example.invalid" && git config --global user.name "test"
+      - run: corepack yarn workspace @tianrendong/gt-cli run test
+
+  superlinter:
+    name: "Run superlinter"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: github/super-linter@v4
+        continue-on-error: true
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TYPESCRIPT_DEFAULT_STYLE: prettier

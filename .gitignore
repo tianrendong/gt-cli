@@ -1,0 +1,29 @@
+.DS_STORE
+.DS_Store
+xcuserdata/
+**/node_modules
+.yarn/*
+.turbo/
+turbo-build.log
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+dist/
+.eslintcache
+.graphite_repo_config
+.idea/*
+.nyc_output/
+coverage/
+pkg/
+
+# we use yarn, not npm
+package-lock.json
+
+# Generated npm README (copied from the repository root during prepack).
+/apps/cli/README.md
+
+# Generated npm source archive (included in the package, never in Git).
+/apps/cli/source.tar.gz
+/apps/cli/source.tar.gz.*.tmp

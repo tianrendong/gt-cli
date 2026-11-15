@@ -1,0 +1,56 @@
+name: Pull request CI
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+jobs:
+  lint_and_fast_tests:
+    name: "Run CLI tests"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          clean: "false"
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Enable Corepack
+        run: corepack enable
+      - name: Install
+        run: corepack yarn install --immutable
+      - name: Lint
+        run: corepack yarn workspace @tianrendong/gt-cli run lint
+      - name: Build
+        run: corepack yarn turbo run build
+      - name: Setup git
+        run: git config --global user.email "test@example.invalid" && git config --global user.name "test"
+      - name: Git Version
+        run: git --version
+      - name: Test
+        run: corepack yarn workspace @tianrendong/gt-cli run test-ci
+
+  superlinter:
+    name: "Run superlinter"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          # Full git history is needed to get a proper list of changed files within `super-linter`
+          fetch-depth: 0
+
+      - name: Lint Code Base
+        uses: github/super-linter@v4
+        continue-on-error: true
+        env:
+          VALIDATE_ALL_CODEBASE: false
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TYPESCRIPT_DEFAULT_STYLE: prettier

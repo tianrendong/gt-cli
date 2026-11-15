@@ -1,0 +1,48 @@
+module.exports = {
+  parserOptions: {
+    project: './tsconfig.json',
+    tsconfigRootDir: __dirname,
+  },
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "import"],
+  "rules": {
+    "no-console": "error",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      { "argsIgnorePattern": "^_" }
+    ],
+    "@typescript-eslint/no-floating-promises": "error",
+    "max-lines-per-function": ["error", { "max": 120 }],
+    "max-params": ["error", { "max": 3 }],
+    "@typescript-eslint/explicit-module-boundary-types": "error",
+    "import/no-default-export": "error",
+    "import/unambiguous": "error",
+    "import/first": "error",
+    "no-restricted-syntax": [
+      "error",
+      {
+        "message": "Banned `exit` function. Please exit execution through return statements so as to not skip cleanup.",
+        "selector": "MemberExpression > Identifier[name=\"exit\"]"
+      }
+    ]
+  },
+  "settings": {
+    "import/parsers": {
+      "@typescript-eslint/parser": [".ts"]
+    },
+    "import/resolver": {
+      "node": {
+        "extensions": [".js", ".ts"]
+      },
+      "typescript": {
+        "alwaysTryTypes": true // always try to resolve types under `<root>@types` directory even it doesn't contain any source code, like `@types/unist`
+      }
+    }
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:import/typescript",
+    "plugin:prettier/recommended"
+  ]
+};
